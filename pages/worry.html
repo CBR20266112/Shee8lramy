@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title data-i18n="page.title">쉽라미 마음 상담소 | Shee8lramy</title>
+  <title>[AI 학사 헬퍼] 사유서 세탁기 | Shee8lramy</title>
   
   <link rel="stylesheet" href="../css/variables.css">
   <link rel="stylesheet" href="../css/style.css">
@@ -11,996 +11,273 @@
   <link rel="stylesheet" href="../css/components.css">
   <link rel="stylesheet" href="../css/animations.css">
   <link rel="stylesheet" href="../css/responsive.css">
+  <script src="https://cdn.tailwindcss.com"></script>
   <style>
-    .worry-page {
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      height: 100dvh;
+    .persona-btn.active {
+      border-color: #f59e0b !important;
+      background: rgba(245, 158, 11, 0.15) !important;
+      color: #fbbf24 !important;
+      box-shadow: 0 0 15px rgba(245, 158, 11, 0.3);
     }
-    
-    .worry-timeline {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-4);
-      padding: var(--space-4);
-      overflow-y: auto;
+    .spinner-spin {
+      animation: spin 0.8s linear infinite;
     }
-
-    .empty-worry {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      text-align: center;
-      gap: var(--space-4);
-      margin-top: 25%;
-      color: var(--text-muted);
-      padding: var(--space-6);
-    }
-
-    .empty-icon {
-      font-size: 3.5rem;
-      opacity: 0.65;
-      animation: float 3s ease-in-out infinite;
-    }
-
-    .worry-card {
-      transition: transform 0.2s ease, border-color 0.2s ease;
-      cursor: pointer;
-    }
-    .worry-card:hover {
-      transform: translateY(-2px);
-      border-color: rgba(167, 139, 250, 0.4);
-    }
-
-    .worry-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: var(--space-2);
-      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-      padding-bottom: 8px;
-    }
-
-    .worry-date {
-      font-size: var(--font-size-xs);
-      font-weight: 800;
-      color: var(--color-purple-soft);
-    }
-
-    .worry-state {
-      font-size: var(--font-size-2xs);
-      background: rgba(134, 239, 172, 0.15);
-      color: #86efac;
-      padding: 2px 8px;
-      border-radius: var(--radius-full);
-      font-weight: 700;
-    }
-
-    .worry-text-preview {
-      font-size: var(--font-size-sm);
-      color: var(--text-primary);
-      line-height: 1.5;
-      margin-bottom: var(--space-3);
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-      white-space: pre-wrap;
-    }
-
-    .worry-reply-preview {
-      background: rgba(255, 255, 255, 0.04);
-      border-radius: var(--radius-sm);
-      padding: var(--space-3);
-      border-left: 3px solid var(--color-purple);
-      font-size: var(--font-size-xs);
-      color: var(--text-muted);
-      line-height: 1.5;
-      white-space: pre-wrap;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-
-    /* 편지 작성창 스타일 */
-    .worry-textarea {
-      width: 100%;
-      height: 140px;
-      border-radius: var(--radius-md);
-      border: 1px solid var(--glass-border);
-      padding: var(--space-4);
-      color: #fff;
-      font-size: var(--font-size-sm);
-      background: rgba(0,0,0,0.35);
-      resize: none;
-      outline: none;
-      line-height: 1.6;
-      font-family: inherit;
-    }
-    .worry-textarea:focus {
-      border-color: var(--color-purple);
-      box-shadow: 0 0 10px rgba(167, 139, 250, 0.2);
-    }
-
-    /* 로딩 애니메이션 */
-    .loading-container {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      gap: var(--space-4);
-      padding: var(--space-8) 0;
-    }
-
-    .loading-sheep-container {
-      position: relative;
-      width: 80px;
-      height: 80px;
-    }
-
-    .loading-sheep {
-      font-size: 4rem;
-      animation: bounce 0.8s ease infinite alternate;
-      display: inline-block;
-    }
-
-    .loading-z {
-      position: absolute;
-      font-size: 1.2rem;
-      font-weight: 900;
-      color: var(--color-purple-soft);
-      opacity: 0;
-      animation: zFloat 2s ease-out infinite;
-    }
-    
-    .loading-z:nth-child(2) { top: -10px; right: 10px; animation-delay: 0.6s; }
-    .loading-z:nth-child(3) { top: -20px; right: 25px; animation-delay: 1.2s; }
-
-    /* 3턴 대화방 레이아웃 */
-    .chat-container {
-      background: linear-gradient(180deg, #161233 0%, #0d0a21 100%);
-      border: 1px solid rgba(167, 139, 250, 0.35);
-      border-radius: var(--radius-lg);
-      padding: var(--space-4);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-      display: flex;
-      flex-direction: column;
-      height: 520px;
-      max-height: 80vh;
-      animation: slideUp 0.4s var(--transition-bounce);
-    }
-
-    .chat-header {
-      font-size: var(--font-size-md);
-      font-weight: 800;
-      color: var(--color-purple-soft);
-      border-bottom: 1px solid rgba(255,255,255,0.08);
-      padding-bottom: var(--space-2);
-      margin-bottom: var(--space-3);
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-    }
-
-    .chat-messages {
-      flex: 1;
-      overflow-y: auto;
-      display: flex;
-      flex-direction: column;
-      gap: var(--space-3);
-      padding-right: 4px;
-      margin-bottom: var(--space-3);
-    }
-
-    /* 말풍선 공통 */
-    .bubble {
-      max-width: 80%;
-      padding: var(--space-3) var(--space-4);
-      border-radius: var(--radius-md);
-      font-size: var(--font-size-sm);
-      line-height: 1.5;
-      word-break: break-all;
-      animation: fadeIn 0.25s ease-out;
-    }
-
-    /* 사용자 말풍선 (우측) */
-    .bubble-user {
-      align-self: flex-end;
-      background: var(--color-purple);
-      color: #fff;
-      border-bottom-right-radius: 2px;
-    }
-
-    /* 쉽라미 아기양 말풍선 (좌측) */
-    .bubble-model {
-      align-self: flex-start;
-      background: rgba(255, 255, 255, 0.08);
-      color: var(--text-primary);
-      border-bottom-left-radius: 2px;
-      border-left: 3px solid var(--color-purple-soft);
-    }
-
-    .bubble-model-prefix {
-      font-size: var(--font-size-2xs);
-      color: var(--color-purple-soft);
-      font-weight: 800;
-      margin-bottom: 4px;
-    }
-
-    .chat-input-area {
-      display: flex;
-      gap: var(--space-2);
-      border-top: 1px solid rgba(255, 255, 255, 0.08);
-      padding-top: var(--space-3);
-    }
-
-    .chat-input {
-      flex: 1;
-      border-radius: var(--radius-sm);
-      border: 1px solid var(--glass-border);
-      padding: var(--space-2) var(--space-3);
-      color: #fff;
-      font-size: var(--font-size-sm);
-      background: rgba(0,0,0,0.3);
-      outline: none;
-    }
-    .chat-input:focus {
-      border-color: var(--color-purple);
-    }
-
-    .chat-btn-send {
-      background: var(--color-purple);
-      color: white;
-      border: none;
-      border-radius: var(--radius-sm);
-      padding: 0 var(--space-4);
-      font-weight: 800;
-      cursor: pointer;
-    }
-    .chat-btn-send:active {
-      transform: scale(0.96);
-    }
-
-    .turn-badge {
-      font-size: var(--font-size-2xs);
-      color: var(--text-muted);
-      text-align: center;
-      margin-bottom: var(--space-2);
-      background: rgba(0, 0, 0, 0.25);
-      border-radius: var(--radius-full);
-      padding: 2px 10px;
-      align-self: center;
-    }
-
-    /* 플로팅 글쓰기 버튼 */
-    .btn-floating-write {
-      position: absolute;
-      right: 20px;
-      bottom: 200px;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: linear-gradient(135deg, var(--color-purple), var(--color-purple-dark));
-      color: white;
-      font-size: 1.5rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--shadow-glow-purple);
-      border: none;
-      cursor: pointer;
-      z-index: 5;
-      transition: transform 0.2s ease;
-    }
-    .btn-floating-write:hover {
-      transform: scale(1.08) rotate(5deg);
-    }
-    .btn-floating-delete {
-      position: absolute;
-      left: 20px;
-      bottom: 200px;
-      width: 56px;
-      height: 56px;
-      border-radius: 50%;
-      background: rgba(255,255,255,0.06);
-      color: #fff;
-      font-size: 1.1rem;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      box-shadow: var(--shadow-glow-purple);
-      border: 1px solid rgba(255,255,255,0.08);
-      cursor: pointer;
-      z-index: 5;
-      transition: transform 0.2s ease, background 0.2s ease;
-    }
-    .btn-floating-delete:hover {
-      transform: scale(1.08);
-      background: rgba(255,255,255,0.1);
-    }
-    .delete-modal-content {
-      max-height: min(60vh, 360px);
-      overflow-y: auto;
-      margin-bottom: var(--space-4);
-    }
-    .delete-entry-item {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: var(--space-2);
-      padding: var(--space-3);
-      border: 1px solid rgba(255,255,255,0.08);
-      border-radius: var(--radius-md);
-      margin-bottom: var(--space-2);
-      background: rgba(255,255,255,0.03);
-      cursor: pointer;
-      transition: background 0.2s ease, transform 0.15s ease;
-    }
-    .delete-entry-item:hover {
-      background: rgba(255,255,255,0.08);
-      transform: translateY(-1px);
-    }
-    .delete-entry-item.selected {
-      background: rgba(249,168,212,0.15);
-      border-color: rgba(249,168,212,0.35);
-    }
-    .delete-entry-date {
-      font-size: var(--font-size-2xs);
-      color: var(--text-muted);
-      white-space: nowrap;
-    }
-    .delete-entry-label {
-      font-size: var(--font-size-sm);
-      color: var(--text-primary);
-      flex: 1;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
     }
   </style>
 </head>
-<body data-page="worry">
+<body class="bg-slate-950 text-slate-100 min-h-screen pb-24">
 
-  <!-- 밤하늘 배경 -->
   <div class="background">
     <canvas id="star-canvas"></canvas>
     <div class="moon"></div>
   </div>
 
-  <main class="phone worry-page">
+  <main class="phone max-w-md mx-auto min-h-screen relative flex flex-col">
     <!-- 헤더 -->
-    <header class="header">
-      <div class="header-left">
-        <button class="btn-back" onclick="location.href='../index.html'" data-i18n-title="site.backButtonTitle">←</button>
+    <header class="header p-4 border-b border-slate-800 flex items-center justify-between bg-slate-900/80 backdrop-blur-md sticky top-0 z-40">
+      <div class="flex items-center gap-3">
+        <button class="btn-back text-slate-400 hover:text-white text-xl" onclick="location.href='../index.html'" title="뒤로가기">←</button>
         <div>
-          <h1 data-i18n="page.heading"></h1>
-          <p class="subtitle" data-i18n="page.subtitle"></p>
-        </div>
-      </div>
-      <div class="header-right">
-        <div class="chip-box" id="wool-display" data-i18n-title="worry.wool.title">
-          <span class="icon">🧶</span>
-          <span id="wool-count">0</span>
+          <h1 class="text-base font-bold text-amber-400 flex items-center gap-1.5">
+            <span>🧼</span> [AI 학사 헬퍼] 사유서 세탁기
+          </h1>
+          <p class="text-[11px] text-slate-400">날것의 핑계를 초공손 교수님 메일로 반짝반짝 세탁</p>
         </div>
       </div>
     </header>
 
-    <!-- 타임라인 스크롤 영역 -->
-    <div class="content worry-timeline" id="worry-timeline-container">
-      <!-- 동적 로드됨 -->
+    <!-- 메인 메인 컨텐츠 -->
+    <div class="content p-4 flex-1 flex flex-col gap-4 overflow-y-auto">
+      <!-- 안내 카드 -->
+      <section class="glass card p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm">
+        <div class="flex items-start gap-3">
+          <span class="text-3xl">🧺</span>
+          <div>
+            <h2 class="font-bold text-sm text-slate-200">교수님 맞춤형 지각/결석 사유서 세탁기</h2>
+            <p class="text-xs text-slate-400 mt-1 leading-relaxed">
+              "늦잠, 버스 연착, 숙취... 날것의 핑계를 입력하면 초공손 비즈니스 메일로 세탁해 드립니다."
+            </p>
+          </div>
+        </div>
+      </section>
+
+      <!-- 날것 핑계 입력 섹션 -->
+      <section class="glass card p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm flex flex-col gap-3">
+        <label class="text-xs font-bold text-slate-300 flex items-center justify-between">
+          <span>📝 날것의 핑계 (입력)</span>
+          <span class="text-[10px] text-slate-500 font-normal">100% 오프라인 안심 세탁</span>
+        </label>
+
+        <textarea id="raw-excuse" class="w-full h-28 bg-slate-950/80 border border-slate-800 rounded-lg p-3 text-xs text-slate-100 placeholder-slate-600 focus:outline-none focus:border-amber-400/60 transition-colors resize-none leading-relaxed" placeholder="예: 늦잠 자서 1교시 셔틀 놓쳤는데 비 개많이 와서 지각할 것 같아요 ㅠㅠ"></textarea>
+
+        <!-- 원클릭 예시 입력 버튼 3종 -->
+        <div>
+          <span class="text-[10px] font-semibold text-slate-400 mb-1.5 block">🔘 원클릭 예시 입력</span>
+          <div class="grid grid-cols-3 gap-1.5">
+            <button type="button" class="btn-quick-example text-[11px] py-1.5 px-2 bg-slate-800/80 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700/60 hover:border-amber-500/40 rounded-lg transition-all text-center truncate" data-text="비가 폭우처럼 쏟아져서 셔틀버스 줄이 너무 길어서 1교시 셔틀을 놓쳐 지각할 것 같습니다 ㅠㅠ">
+              🌧️ 비 와서 셔틀 놓침
+            </button>
+            <button type="button" class="btn-quick-example text-[11px] py-1.5 px-2 bg-slate-800/80 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700/60 hover:border-amber-500/40 rounded-lg transition-all text-center truncate" data-text="어제 밤샘 팀플 과제 마감 채우느라 잠을 못 자고 알람 소리를 못 들어서 지각입니다 교수님 죄송합니다">
+              💻 팀플 과제 마감
+            </button>
+            <button type="button" class="btn-quick-example text-[11px] py-1.5 px-2 bg-slate-800/80 hover:bg-amber-500/20 text-slate-300 hover:text-amber-300 border border-slate-700/60 hover:border-amber-500/40 rounded-lg transition-all text-center truncate" data-text="갑자기 감기 오한 기운에 몸살이 나고 열이 나서 병원 진료 후 늦게 참석해야 할 것 같아요 ㅠㅠ">
+              🤒 감기 기운 자체휴강
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 교수님 페르소나 3종 선택 -->
+      <section class="glass card p-4 rounded-xl border border-slate-800 bg-slate-900/60 backdrop-blur-sm flex flex-col gap-2.5">
+        <label class="text-xs font-bold text-slate-300">
+          🎓 교수님 성향 선택 (페르소나 3종)
+        </label>
+        
+        <div class="grid grid-cols-3 gap-2">
+          <button type="button" class="persona-btn active flex flex-col items-center justify-center p-2.5 bg-slate-950/60 border border-slate-800 rounded-lg transition-all" data-persona="strict">
+            <span class="text-lg">🏛️</span>
+            <span class="text-[11px] font-bold mt-1">원칙주의 엄격형</span>
+            <span class="text-[9px] text-slate-400 mt-0.5 text-center">학칙 제14조/증빙</span>
+          </button>
+
+          <button type="button" class="persona-btn flex flex-col items-center justify-center p-2.5 bg-slate-950/60 border border-slate-800 rounded-lg transition-all text-slate-400" data-persona="emotional">
+            <span class="text-lg">🌱</span>
+            <span class="text-[11px] font-bold mt-1">인자한 감성형</span>
+            <span class="text-[9px] text-slate-400 mt-0.5 text-center">건강안부/깊은탄식</span>
+          </button>
+
+          <button type="button" class="persona-btn flex flex-col items-center justify-center p-2.5 bg-slate-950/60 border border-slate-800 rounded-lg transition-all text-slate-400" data-persona="concise">
+            <span class="text-lg">⚡</span>
+            <span class="text-[11px] font-bold mt-1">바쁜 연구형</span>
+            <span class="text-[9px] text-slate-400 mt-0.5 text-center">사족제로/3줄요약</span>
+          </button>
+        </div>
+      </section>
+
+      <!-- 세탁 실행 버튼 -->
+      <button type="button" id="btn-clean-start" class="w-full py-3 px-4 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-extrabold text-sm rounded-xl shadow-lg shadow-amber-500/20 transition-all flex items-center justify-center gap-2">
+        <span>✨</span> 마법처럼 사유서 세탁하기
+      </button>
+
+      <!-- 0.8초 스피너 오버레이 (숨김) -->
+      <div id="loading-spinner" class="hidden p-6 bg-slate-900/90 border border-amber-500/30 rounded-xl flex flex-col items-center justify-center gap-3">
+        <div class="w-10 h-10 border-4 border-amber-500/30 border-t-amber-400 rounded-full spinner-spin"></div>
+        <p class="text-xs text-amber-300 font-bold animate-pulse">양털 세탁기로 핑계를 세탁하는 중... 🧺 (0.8초)</p>
+      </div>
+
+      <!-- 세탁 결과 카드리스트 (기본 숨김) -->
+      <section id="result-card" class="hidden glass card p-4 rounded-xl border border-amber-500/40 bg-slate-900/90 backdrop-blur-md flex flex-col gap-3 transition-all">
+        <div class="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <span class="text-xs font-bold text-amber-400 flex items-center gap-1.5">
+            <span>🧼</span> 세탁 완료된 초공손 이메일
+          </span>
+          <span class="text-[10px] bg-amber-400/20 text-amber-300 px-2 py-0.5 rounded-full font-semibold">발송 준비 완료</span>
+        </div>
+
+        <!-- 메일 정보 -->
+        <div class="space-y-2 text-xs">
+          <div class="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+            <span class="text-slate-400 block text-[10px]">📌 [메일 제목]</span>
+            <span id="res-title" class="font-bold text-slate-100 text-[11px]"></span>
+          </div>
+
+          <div class="grid grid-cols-2 gap-2 text-[11px]">
+            <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+              <span class="text-slate-400 block text-[9px]">수신</span>
+              <span id="res-recipient" class="font-medium text-slate-200"></span>
+            </div>
+            <div class="bg-slate-950/80 p-2 rounded-lg border border-slate-800">
+              <span class="text-slate-400 block text-[9px]">발신</span>
+              <span id="res-sender" class="font-medium text-slate-200"></span>
+            </div>
+          </div>
+
+          <!-- 본문 -->
+          <div class="bg-slate-950/90 p-3 rounded-lg border border-slate-800 font-mono text-[11px] leading-relaxed text-slate-200 whitespace-pre-wrap select-all" id="res-body"></div>
+
+          <!-- 첨부 서류 가이드 -->
+          <div class="bg-amber-500/10 border border-amber-500/30 p-2.5 rounded-lg text-[11px] text-amber-300 font-semibold" id="res-evidence"></div>
+        </div>
+
+        <!-- 클립보드 복사 버튼 -->
+        <button type="button" id="btn-copy-clipboard" class="w-full py-2.5 bg-slate-800 hover:bg-slate-700 text-amber-400 font-bold text-xs rounded-lg border border-amber-400/30 hover:border-amber-400/60 transition-all flex items-center justify-center gap-1.5 mt-1">
+          <span>📋</span> 원클릭 클립보드 복사
+        </button>
+      </section>
     </div>
 
-    <!-- 플로팅 삭제 버튼 -->
-    <button class="btn-floating-delete" id="btn-start-delete-worries" data-i18n-title="worry.deleteButtonTitle">🗑️</button>
-
-    <!-- 플로팅 글쓰기 버튼 -->
-    <button class="btn-floating-write" id="btn-open-worry-modal" data-i18n-title="worry.writeButtonTitle">
-      💭
-    </button>
-
-    <!-- 삭제 모드 모달 -->
-    <div class="overlay" id="worry-delete-overlay"></div>
-    <div class="modal" id="worry-delete-modal" style="max-width: 92%; width: 360px;">
-      <div class="modal-handle"></div>
-      <h3 class="font-bold" style="font-size: var(--font-size-md); margin-bottom: var(--space-2);" data-i18n="worry.deleteMode.title"></h3>
-      <p class="text-muted" style="font-size: var(--font-size-2xs); line-height:1.6; margin-bottom: var(--space-3);" data-i18n="worry.deleteMode.desc"></p>
-      <div class="delete-modal-content" id="worry-delete-list"></div>
-      <div class="flex gap-2">
-        <button type="button" class="btn btn-secondary w-full" id="btn-cancel-delete-worries" data-i18n="worry.deleteMode.cancel"></button>
-        <button type="button" class="btn btn-danger w-full" id="btn-confirm-delete-worries" data-i18n="worry.deleteMode.confirm"></button>
-      </div>
-    </div>
-
-    <!-- 하단 네비게이션 -->
-    <nav class="bottom-nav">
-      <div class="nav-item" data-href="../index.html">
-        <span class="nav-icon">🏠</span>
-        <span class="nav-label" data-i18n="nav.home"></span>
-        <span class="nav-dot"></span>
-      </div>
-      <div class="nav-item" data-href="sleep.html">
-        <span class="nav-icon">🌙</span>
-        <span class="nav-label" data-i18n="nav.sleep"></span>
-        <span class="nav-dot"></span>
-      </div>
-      <div class="nav-item" data-href="workshop.html">
-        <span class="nav-icon">🧶</span>
-        <span class="nav-label" data-i18n="nav.workshop"></span>
-        <span class="nav-dot"></span>
-      </div>
-      <div class="nav-item" data-href="friends.html">
-        <span class="nav-icon">👥</span>
-        <span class="nav-label" data-i18n="nav.friends"></span>
-        <span class="nav-dot"></span>
-      </div>
-      <div class="nav-item" data-href="gallery.html">
-        <span class="nav-icon">🖼️</span>
-        <span class="nav-label" data-i18n="nav.gallery"></span>
-        <span class="nav-dot"></span>
-      </div>
+    <!-- 통일 하단 6탭 네비게이션 바 -->
+    <nav class="bottom-nav fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-900/95 backdrop-blur-md border-t border-slate-800 flex justify-around items-center py-2 px-1 z-50">
+      <a href="../index.html" data-href="../index.html" class="nav-btn nav-item flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-amber-400 transition-colors">
+        <span class="text-xl nav-icon">🏠</span>
+        <span class="text-[10px] mt-0.5 font-medium nav-label">홈</span>
+      </a>
+      <a href="./wake.html" data-href="./wake.html" class="nav-btn nav-item flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-amber-400 transition-colors">
+        <span class="text-xl nav-icon">⏰</span>
+        <span class="text-[10px] mt-0.5 font-medium nav-label">기상</span>
+      </a>
+      <a href="./calendar.html" data-href="./calendar.html" class="nav-btn nav-item flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-amber-400 transition-colors">
+        <span class="text-xl nav-icon">📅</span>
+        <span class="text-[10px] mt-0.5 font-medium nav-label">캘린더</span>
+      </a>
+      <a href="./friends.html" data-href="./friends.html" class="nav-btn nav-item flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-amber-400 transition-colors">
+        <span class="text-xl nav-icon">👥</span>
+        <span class="text-[10px] mt-0.5 font-medium nav-label">친구</span>
+      </a>
+      <a href="./workshop.html" data-href="./workshop.html" class="nav-btn nav-item flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-amber-400 transition-colors">
+        <span class="text-xl nav-icon">🎨</span>
+        <span class="text-[10px] mt-0.5 font-medium nav-label">공방</span>
+      </a>
+      <a href="./gallery.html" data-href="./gallery.html" class="nav-btn nav-item flex flex-col items-center justify-center flex-1 py-1 text-slate-400 hover:text-amber-400 transition-colors">
+        <span class="text-xl nav-icon">🏆</span>
+        <span class="text-[10px] mt-0.5 font-medium nav-label">갤러리</span>
+      </a>
     </nav>
   </main>
 
-  <!-- 뒷배경 암전 오버레이 -->
-  <div class="overlay" id="worry-overlay"></div>
-
-  <!-- 최초 고민 작성 모달 -->
-  <div class="modal" id="worry-write-modal">
-    <div class="modal-handle"></div>
-    <h3 class="text-center font-bold" style="font-size: var(--font-size-md); margin-bottom: var(--space-1);" data-i18n="worry.write.title"></h3>
-    <p class="text-center text-muted" style="font-size: var(--font-size-2xs); margin-bottom: var(--space-4); line-height: 1.5;" data-i18n-html="worry.write.desc"></p>
-    
-    <div style="margin-bottom: var(--space-4);">
-      <textarea id="textarea-worry-input" class="worry-textarea" data-i18n-placeholder="worry.write.placeholder"></textarea>
-    </div>
-
-    <div class="flex gap-3">
-      <button class="btn btn-secondary" id="btn-close-worry-modal" style="flex:1;" data-i18n="worry.write.close"></button>
-      <button class="btn btn-primary" id="btn-submit-worry" style="flex:2;" data-i18n="worry.write.submit"></button>
-        <span class="loading-z">z</span>
-        <span class="loading-z">z</span>
-        <span class="loading-z">z</span>
-      </div>
-      <h3 class="font-bold" style="font-size: var(--font-size-sm); color:#fff; margin-top: 10px;" data-i18n="worry.loading.title"></h3>
-      <p class="text-muted" style="font-size: var(--font-size-2xs); text-align:center;" data-i18n="worry.loading.desc"></p>
-    </div>
-  </div>
-
-  <!-- 로딩 모달 -->
-  <div class="modal" id="worry-loading-modal" style="max-width: 92%; width: 360px; display: none;">
-    <div class="modal-handle"></div>
-    <h3 class="font-bold" style="font-size: var(--font-size-md); margin-bottom: var(--space-2);" data-i18n="worry.loading.title"></h3>
-    <p class="text-muted" style="font-size: var(--font-size-2xs); line-height:1.6; margin-bottom: var(--space-3); text-align:center;" data-i18n="worry.loading.desc"></p>
-  </div>
-
-  <!-- 3턴 제한 대화 모달 -->
-  <div class="modal" id="worry-chat-modal" style="background:transparent; border:none; box-shadow:none; padding:0;">
-    <div class="chat-container">
-      <div class="chat-header">
-        <span data-i18n="worry.chat.title"></span>
-        <span class="worry-date" id="chat-date-txt">2026-07-05</span>
-      </div>
-      
-      <!-- 대화창 메시지 나열부 -->
-      <div class="chat-messages" id="chat-messages-box">
-        <!-- 동적 로드됨 -->
-      </div>
-      
-      <!-- 대화 입력창 (3턴 미만일 때만 활성) -->
-      <div class="chat-input-area" id="chat-input-container">
-        <input type="text" id="input-chat-message" class="chat-input" data-i18n-placeholder="worry.chat.input.placeholder" maxlength="80">
-        <button class="chat-btn-send" id="btn-send-chat" data-i18n="worry.chat.send"></button>
-      </div>
-
-      <!-- 수면 전환 영역 (3턴 종료 또는 수면 선택 시 노출) -->
-      <div class="flex flex-col gap-2" id="chat-sleep-container" style="display: none; border-top: 1px solid rgba(255,255,255,0.08); padding-top: 12px; margin-top: 4px;">
-        <div class="text-center text-muted" style="font-size: var(--font-size-2xs); margin-bottom: 4px; color: var(--color-purple-soft); font-weight:800;" data-i18n="worry.chat.sleep.finished"></div>
-        <button class="btn btn-primary w-full" id="btn-confirm-chat-sleep" style="padding: var(--space-3); font-weight:800;" data-i18n="worry.chat.sleep.button"></button>
-        <button class="btn btn-secondary w-full" id="btn-confirm-chat-close" style="padding: var(--space-2.5); border-color: rgba(255,255,255,0.1); color: var(--text-muted);" data-i18n="worry.chat.back"></button>
-      </div>
-    </div>
-  </div>
-
   <script type="module">
-    import { initCommon, showToast, spawnHearts } from '../js/app.js';
-    import { getSheep, saveSheep, getSettings, getWorries, saveWorry, deleteWorry, getLocalDateKey } from '../js/storage.js';
-    import { getLocalWorryReply, getWorryCategory } from '../js/worry.js';
-    import { resumeAudio } from '../js/sound.js';
-    import { t } from '../js/i18n.js';
+    import { initCommon, showToast } from '../js/app.js';
+    import { cleanExcuse } from '../js/worry.js';
 
     document.addEventListener('DOMContentLoaded', () => {
       initCommon();
 
-      const overlay = document.getElementById('worry-overlay');
-      const writeModal = document.getElementById('worry-write-modal');
-      const loadingModal = document.getElementById('worry-loading-modal');
-      const chatModal = document.getElementById('worry-chat-modal');
-      
-      const timelineContainer = document.getElementById('worry-timeline-container');
-      const woolCount = document.getElementById('wool-count');
-      const worryInput = document.getElementById('textarea-worry-input');
+      const rawTextarea = document.getElementById('raw-excuse');
+      const personaBtns = document.querySelectorAll('.persona-btn');
+      const btnCleanStart = document.getElementById('btn-clean-start');
+      const loadingSpinner = document.getElementById('loading-spinner');
+      const resultCard = document.getElementById('result-card');
+      const btnCopyClipboard = document.getElementById('btn-copy-clipboard');
 
-      const btnOpenWrite = document.getElementById('btn-open-worry-modal');
-      const btnCloseWrite = document.getElementById('btn-close-worry-modal');
-      const btnSubmit = document.getElementById('btn-submit-worry');
-      const btnStartDelete = document.getElementById('btn-start-delete-worries');
-      const deleteOverlay = document.getElementById('worry-delete-overlay');
-      const deleteModal = document.getElementById('worry-delete-modal');
-      const deleteList = document.getElementById('worry-delete-list');
-      const btnCancelDelete = document.getElementById('btn-cancel-delete-worries');
-      const btnConfirmDelete = document.getElementById('btn-confirm-delete-worries');
-      
-      const chatMessagesBox = document.getElementById('chat-messages-box');
-      const chatInputContainer = document.getElementById('chat-input-container');
-      const chatInputField = document.getElementById('input-chat-message');
-      const btnSendChat = document.getElementById('btn-send-chat');
+      let currentPersona = 'strict';
+      let lastCleanedResult = null;
 
-      const chatSleepContainer = document.getElementById('chat-sleep-container');
-      const btnCloseChat = document.getElementById('btn-confirm-chat-close');
-      const btnSleepChat = document.getElementById('btn-confirm-chat-sleep');
-      const chatDateTxt = document.getElementById('chat-date-txt');
+      // 1. 예시 클릭 핸들러
+      document.querySelectorAll('.btn-quick-example').forEach(btn => {
+        btn.addEventListener('click', () => {
+          rawTextarea.value = btn.dataset.text;
+          rawTextarea.focus();
+          showToast('💡 예시 핑계가 입력되었습니다.', 'info');
+        });
+      });
 
-      let currentActiveDate = ""; // 현재 보고 있는 대화방 날짜
-
-      // ─── UI 렌더링 ───
-      function refreshUI() {
-        const sheep = getSheep();
-        woolCount.textContent = sheep.wool;
-        renderTimeline();
-      }
-
-      function todayStr() {
-        return getLocalDateKey();
-      }
-
-      function renderTimeline() {
-        const worries = getWorries();
-        timelineContainer.innerHTML = '';
-
-        if (worries.length === 0) {
-          timelineContainer.innerHTML = `
-            <div class="empty-worry">
-              <div class="empty-icon">💭</div>
-              <h3 class="font-bold" style="font-size: var(--font-size-md); color:#fff;">${t('worry.empty.title')}</h3>
-              <p style="font-size: var(--font-size-xs); line-height:1.6;">
-                ${t('worry.empty.desc')}
-              </p>
-            </div>
-          `;
-          return;
-        }
-
-        // 최신 고민이 위로 오도록 역순 루프
-        for (let i = worries.length - 1; i >= 0; i--) {
-          const item = worries[i];
-          const card = document.createElement('div');
-          card.className = 'glass card worry-card';
-          card.style.padding = 'var(--space-4)';
-          
-          card.innerHTML = `
-            <div class="worry-header">
-              <span class="worry-date">${item.date}</span>
-              <span class="worry-state">${t('worry.timeline.completed')}</span>
-            </div>
-            <div class="worry-text-preview">${escapeHtml(item.content)}</div>
-            <div class="worry-reply-preview">${escapeHtml(item.reply)}</div>
-          `;
-          
-          card.addEventListener('click', () => {
-            openChatRoom(item.date);
+      // 2. 페르소나 버튼 선택
+      personaBtns.forEach(btn => {
+        btn.addEventListener('click', () => {
+          personaBtns.forEach(b => {
+            b.classList.remove('active');
+            b.classList.add('text-slate-400');
           });
-          
-          timelineContainer.appendChild(card);
-        }
-      }
+          btn.classList.add('active');
+          btn.classList.remove('text-slate-400');
+          currentPersona = btn.dataset.persona;
+        });
+      });
 
-      function escapeHtml(str) {
-        return str
-          .replace(/&/g, "&amp;")
-          .replace(/</g, "&lt;")
-          .replace(/>/g, "&gt;")
-          .replace(/"/g, "&quot;")
-          .replace(/'/g, "&#039;");
-      }
-
-      // ─── 3턴 대화방 열기 ───
-      function openChatRoom(date, opts = {}) {
-        currentActiveDate = date;
-        chatDateTxt.textContent = date;
-        
-        const worries = getWorries();
-        const worryData = worries.find(w => w.date === date);
-        if (!worryData) return;
-
-        // 히스토리가 없다면 마이그레이션(기존 1턴 적재)
-        if (!worryData.turns) {
-          worryData.turns = [
-            { role: "user", content: worryData.content },
-            { role: "model", content: worryData.reply }
-          ];
+      // 3. 세탁하기 실행 (0.8초 스피너 동작 후 결과 출력)
+      btnCleanStart.addEventListener('click', () => {
+        const val = rawTextarea.value.trim();
+        if (!val) {
+          showToast('⚠️ 날것의 핑계나 사유를 먼저 입력해주세요!', 'warning');
+          rawTextarea.focus();
+          return;
         }
 
-        const animateLastReply = opts.animateLastReply && worryData.turns.length > 1;
-        if (animateLastReply) {
-          renderChatMessages(worryData.turns.slice(0, -1));
-          appendTypingModelReply(worryData.turns[worryData.turns.length - 1].content);
-        } else {
-          renderChatMessages(worryData.turns);
-        }
-        
-        // 사용자가 보낸 메시지 수(턴 수)
-        const userTurnsCount = worryData.turns.filter(t => t.role === 'user').length;
+        resultCard.classList.add('hidden');
+        loadingSpinner.classList.remove('hidden');
 
-        if (userTurnsCount >= 4) {
-          // 4번째부터는 하루 제한 메시지로 안내
-          chatInputContainer.style.display = 'none';
-          chatSleepContainer.style.display = 'flex';
-        } else {
-          // 추가 대화 가능
-          chatInputContainer.style.display = 'flex';
-          chatSleepContainer.style.display = 'flex'; // 대화 중에도 목록가기/잠자기 바로 선택 가능
-        }
-
-        overlay.classList.add('active');
-        chatModal.classList.add('active');
-        
-        // 대화창 하단 자동 스크롤
         setTimeout(() => {
-          chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight;
-        }, 100);
-      }
-
-      function renderChatMessages(turns) {
-        chatMessagesBox.innerHTML = '';
-        let turnCounter = 1;
-
-        turns.forEach(msg => {
-          if (msg.role === 'user') {
-            const badge = document.createElement('div');
-            badge.className = 'turn-badge';
-            badge.textContent = t('worry.chat.turnBadge', { turn: turnCounter });
-            chatMessagesBox.appendChild(badge);
-            turnCounter++;
-          }
-
-          const div = document.createElement('div');
-          div.className = `bubble bubble-${msg.role}`;
+          loadingSpinner.classList.add('hidden');
           
-          const modelSpeaker = t('worry.chat.speaker') || 'Shee8lramy';
-      if (msg.role === 'model') {
-            div.innerHTML = `
-              <div class="bubble-model-prefix">${modelSpeaker}</div>
-              <div>${escapeHtml(msg.content).replace(/\n/g, '<br>')}</div>
-            `;
-          } else {
-            div.textContent = msg.content;
-          }
-          chatMessagesBox.appendChild(div);
+          const result = cleanExcuse(val, currentPersona);
+          lastCleanedResult = result;
+
+          document.getElementById('res-title').textContent = result.title;
+          document.getElementById('res-recipient').textContent = result.recipient;
+          document.getElementById('res-sender').textContent = result.sender;
+          document.getElementById('res-body').textContent = result.body;
+          document.getElementById('res-evidence').textContent = result.evidence;
+
+          resultCard.classList.remove('hidden');
+          resultCard.scrollIntoView({ behavior: 'smooth' });
+          showToast('✨ 초공손 비즈니스 사유서로 세탁되었습니다!', 'success');
+        }, 800);
+      });
+
+      // 4. 원클릭 클립보드 복사
+      btnCopyClipboard.addEventListener('click', () => {
+        if (!lastCleanedResult) return;
+        const textToCopy = `[제목]: ${lastCleanedResult.title}\n[수신]: ${lastCleanedResult.recipient}\n\n${lastCleanedResult.body}\n\n${lastCleanedResult.evidence}`;
+        
+        navigator.clipboard.writeText(textToCopy).then(() => {
+          showToast('📋 세탁된 사유서가 클립보드에 복사되었습니다! 교수님께 바로 전송하세요.', 'success', 3500);
+        }).catch(() => {
+          showToast('📋 복사 완료되었습니다.', 'success');
         });
-      }
-
-      function appendTypingModelReply(text) {
-        return new Promise(resolve => {
-          const modelSpeaker = t('worry.chat.speaker') || 'Shee8lramy';
-          const bubble = document.createElement('div');
-          bubble.className = 'bubble bubble-model';
-          bubble.innerHTML = `<div class="bubble-model-prefix">${modelSpeaker}</div>`;
-
-          const contentEl = document.createElement('div');
-          bubble.appendChild(contentEl);
-          chatMessagesBox.appendChild(bubble);
-          chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight;
-
-          let idx = 0;
-          let currentTextNode = document.createTextNode('');
-          contentEl.appendChild(currentTextNode);
-
-          const interval = setInterval(() => {
-            const char = text[idx++];
-            if (char === '\n') {
-              contentEl.appendChild(document.createElement('br'));
-              currentTextNode = document.createTextNode('');
-              contentEl.appendChild(currentTextNode);
-            } else {
-              currentTextNode.nodeValue += char;
-            }
-            chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight;
-            if (idx >= text.length) {
-              clearInterval(interval);
-              resolve();
-            }
-          }, 25);
-        });
-      }
-
-      // ─── 이벤트 처리 ───
-
-      // 최초 고민 작성 모달 열기
-      btnOpenWrite.addEventListener('click', () => {
-        resumeAudio();
-        const today = todayStr();
-        const worries = getWorries();
-        const alreadyDone = worries.find(w => w.date === today);
-        
-        if (alreadyDone) {
-          showToast(t('worry.toast.alreadyDone'), 'info');
-          openChatRoom(alreadyDone.date);
-          return;
-        }
-
-        worryInput.value = '';
-        overlay.classList.add('active');
-        writeModal.classList.add('active');
-        setTimeout(() => worryInput.focus(), 150);
       });
-
-      let selectedDeleteDate = null;
-
-      function renderDeleteList() {
-        const worries = getWorries();
-        deleteList.innerHTML = '';
-        selectedDeleteDate = null;
-        btnConfirmDelete.disabled = true;
-
-        if (worries.length === 0) {
-          deleteList.innerHTML = `<div class="text-center text-muted" style="font-size: var(--font-size-sm); line-height: 1.6;">${t('worry.delete.empty')}</div>`;
-          return;
-        }
-
-        const sorted = [...worries].sort((a, b) => b.date.localeCompare(a.date));
-        sorted.forEach(item => {
-          const entry = document.createElement('button');
-          entry.type = 'button';
-          entry.className = 'delete-entry-item';
-          entry.innerHTML = `
-            <div style="display:flex; flex-direction:column; align-items:flex-start; gap:4px; flex:1; text-align:left;">
-              <span class="delete-entry-date">${item.date}</span>
-              <span class="delete-entry-label">${escapeHtml(item.content.slice(0, 70))}</span>
-            </div>
-            <span style="font-size: 0.9rem; color: var(--text-muted);">${t('worry.delete.label')}</span>
-          `;
-
-          entry.addEventListener('click', () => {
-            selectedDeleteDate = selectedDeleteDate === item.date ? null : item.date;
-            btnConfirmDelete.disabled = !selectedDeleteDate;
-            deleteList.querySelectorAll('.delete-entry-item').forEach(el => {
-              el.classList.toggle('selected', el === entry && selectedDeleteDate === item.date);
-            });
-          });
-
-          deleteList.appendChild(entry);
-        });
-      }
-
-      btnConfirmDelete.addEventListener('click', () => {
-        if (!selectedDeleteDate) {
-          showToast(t('worry.toast.selectDelete'), 'error');
-          return;
-        }
-
-        deleteWorry(selectedDeleteDate);
-        deleteModal.classList.remove('active');
-        deleteOverlay.classList.remove('active');
-        showToast(t('worry.toast.deleted'), 'success');
-        refreshUI();
-      });
-
-      // 작성 모달 닫기
-      btnCloseWrite.addEventListener('click', () => {
-        writeModal.classList.remove('active');
-        overlay.classList.remove('active');
-      });
-
-      // 삭제 모드 열기
-      btnStartDelete.addEventListener('click', () => {
-        renderDeleteList();
-        deleteOverlay.classList.add('active');
-        deleteModal.classList.add('active');
-        btnConfirmDelete.disabled = true;
-      });
-
-      btnCancelDelete.addEventListener('click', () => {
-        deleteModal.classList.remove('active');
-        deleteOverlay.classList.remove('active');
-      });
-
-      deleteOverlay.addEventListener('click', () => {
-        deleteModal.classList.remove('active');
-        deleteOverlay.classList.remove('active');
-      });
-
-      // 닫기용 오버레이 클릭
-      overlay.addEventListener('click', () => {
-        writeModal.classList.remove('active');
-        loadingModal.classList.remove('active');
-        chatModal.classList.remove('active');
-        overlay.classList.remove('active');
-      });
-
-      // 최초 고민 저장 및 대화방 진입
-      btnSubmit.addEventListener('click', async () => {
-        const text = worryInput.value.trim();
-        if (text.length < 5) {
-          showToast(t('worry.toast.minLength'), 'error');
-          worryInput.focus();
-          return;
-        }
-
-        writeModal.classList.remove('active');
-        loadingModal.classList.add('active');
-
-        const settings = getSettings();
-        const today = todayStr();
-        let reply = "";
-
-        const category = getWorryCategory(text);
-
-        // 딜레이 연출 (1.2초)
-        await new Promise(resolve => setTimeout(resolve, 1200));
-
-        try {
-          reply = getLocalWorryReply(text, 1, category);
-          showToast(t('worry.toast.replyArrived'), 'success');
-        } catch (err) {
-          console.warn(err);
-          reply = getLocalWorryReply(text, 1, category);
-          showToast(t('worry.toast.fallback'), 'info');
-        }
-
-        // 스토리지 구조화 저장
-        const initialTurns = [
-          { role: "user", content: text },
-          { role: "model", content: reply }
-        ];
-
-        // worries 배열 로드 후 업데이트
-        const worries = getWorries();
-        const newWorry = {
-          date: today,
-          content: text,
-          reply: reply, // 대표 요약용
-          category: category,
-          turns: initialTurns,
-          createdAt: new Date().toISOString()
-        };
-        worries.push(newWorry);
-        worries.sort((a, b) => new Date(a.date) - new Date(b.date));
-        localStorage.setItem('ss_worries', JSON.stringify(worries));
-
-        // 최초 고민 보상 (+10 XP)
-        const sheep = getSheep();
-        sheep.xp += 10;
-        let leveledUp = false;
-        if (sheep.xp >= sheep.xpToNext) {
-          sheep.level += 1;
-          sheep.xp -= sheep.xpToNext;
-          sheep.xpToNext = Math.round(sheep.xpToNext * 1.3);
-          sheep.step = Math.min(Math.floor((sheep.level - 1) / 3) + 1, 10);
-          leveledUp = true;
-        }
-        saveSheep(sheep);
-
-        refreshUI();
-        spawnHearts(document.body);
-        
-        if (leveledUp) {
-          showToast(t('worry.toast.levelUp', { level: sheep.level }), 'success');
-        } else {
-          showToast(t('worry.toast.gainedXP'), 'success');
-        }
-
-        loadingModal.classList.remove('active');
-        openChatRoom(today, { animateLastReply: true });
-      });
-
-      // 대화 한마디 추가 전송 (멀티턴)
-      btnSendChat.addEventListener('click', async () => {
-        const text = chatInputField.value.trim();
-        if (!text) return;
-
-        chatInputField.value = '';
-        
-        const worries = getWorries();
-        const worryData = worries.find(w => w.date === currentActiveDate);
-        if (!worryData) return;
-
-        // 히스토리 추가
-        worryData.turns.push({ role: "user", content: text });
-        renderChatMessages(worryData.turns);
-        chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight;
-
-        // 턴 수 카운트
-        const userTurnsCount = worryData.turns.filter(t => t.role === 'user').length;
-
-        // 임시 로딩 말풍선 표시
-        const tempLoadingDiv = document.createElement('div');
-        tempLoadingDiv.className = 'bubble bubble-model';
-        tempLoadingDiv.innerHTML = `
-          <div class="bubble-model-prefix">쉽라미</div>
-          <div style="font-style: italic; opacity: 0.6;">${t('worry.chat.loading')}</div>
-        `;
-        chatMessagesBox.appendChild(tempLoadingDiv);
-        chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight;
-
-        // 대화 비활성화
-        chatInputField.disabled = true;
-        btnSendChat.disabled = true;
-
-        await new Promise(resolve => setTimeout(resolve, 1000));
-
-        let reply = "";
-        const settings = getSettings();
-
-        try {
-          reply = getLocalWorryReply(text, userTurnsCount, worryData.category);
-        } catch (err) {
-          console.warn(err);
-          reply = getLocalWorryReply(text, userTurnsCount, worryData.category);
-        }
-
-        // 로딩 말풍선 제거 및 실제 답변 추가
-        tempLoadingDiv.remove();
-        worryData.turns.push({ role: "model", content: reply });
-        
-        // 스토리지 저장
-        const idx = worries.findIndex(w => w.date === currentActiveDate);
-        if (idx >= 0) worries[idx] = worryData;
-        localStorage.setItem('ss_worries', JSON.stringify(worries));
-
-        await appendTypingModelReply(reply);
-        chatMessagesBox.scrollTop = chatMessagesBox.scrollHeight;
-
-        // 입력창 복구 및 3턴 만료 검사
-        chatInputField.disabled = false;
-        btnSendChat.disabled = false;
-
-        if (userTurnsCount >= 4) {
-          // 4번째까지 허용된 입력 이후에는 추가 입력을 차단
-          chatInputContainer.style.display = 'none';
-          chatSleepContainer.style.display = 'flex';
-          showToast(t('worry.toast.tooMuch'), 'info');
-        }
-        
-        refreshUI();
-      });
-
-      chatInputField.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') btnSendChat.click();
-      });
-
-      // 대화창 닫기
-      btnCloseChat.addEventListener('click', () => {
-        chatModal.classList.remove('active');
-        overlay.classList.remove('active');
-      });
-
-      // 대화 후 자러가기
-      btnSleepChat.addEventListener('click', () => {
-        chatModal.classList.remove('active');
-        overlay.classList.remove('active');
-
-        // 홈 화면에 가자마자 '오늘 밤자기 시작' 상태가 즉시 켜지도록 로컬 스토리지에 특수 수면 플래그 심기
-        const now = new Date();
-        const bedTimeString = `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-        
-        localStorage.setItem('ss_sleeping_since', JSON.stringify({ 
-          time: now.toISOString(), 
-          bedtime: bedTimeString 
-        }));
-
-        showToast(t('worry.toast.sleepStarted'), 'success');
-        
-        setTimeout(() => {
-          location.href = '../index.html';
-        }, 1200);
-      });
-
-      // 초기 로드
-      refreshUI();
     });
   </script>
 </body>
