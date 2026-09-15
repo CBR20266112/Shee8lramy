@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>학점 방어 공방 | Shee8lramy 쉽알라미</title>
+  
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+
+  <!-- 밤하늘 배경 -->
+  <div class="background">
+    <canvas id="star-canvas"></canvas>
+    <div class="moon"></div>
+  </div>
+
+  <main class="phone">
+    <!-- 헤더 -->
+    <header class="header">
+      <div class="header-left">
+        <button class="btn-back" onclick="location.href='../index.html'" title="뒤로가기">←</button>
+        <div>
+          <h1>🧶 학점 방어 공방</h1>
+          <p class="subtitle">출결 미션 보상 포인트로 학점 생존 템 & 캐릭터 꾸미기</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="chip-box" id="wool-display">
+          <span class="icon">🧶</span>
+          <span id="wool-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 스크롤 영역 -->
+    <div class="content">
+
+      <!-- 방 미리보기 영역 -->
+      <section class="section-header" style="margin-bottom: var(--space-2);">
+        <span class="section-title">🏡 나의 아늑한 방 & 공부 공간</span>
+      </section>
+      <section id="room-preview-container" style="margin-bottom: var(--space-3);">
+        <!-- room.js를 통해 방 꾸미기 요소가 렌더링됨 -->
+      </section>
+
+      <!-- 상점 아이템 리스트 영역 -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <div class="section-header">
+          <h3 class="font-bold" style="font-size: var(--font-size-sm); color: var(--text-secondary);">🛒 생존템 & 캐릭터 상점</h3>
+        </div>
+
+        <!-- 카테고리 탭 (가로 스크롤 가능하도록 CSS 처리) -->
+        <div class="tab-bar" id="category-tabs" style="overflow-x: auto; white-space: nowrap; gap: 4px; padding: 4px; display: flex; scrollbar-width: none;">
+          <!-- js에서 동적으로 로드 -->
+        </div>
+
+        <div class="divider" style="margin: var(--space-3) 0;"></div>
+
+        <!-- 아이템 그리드 리스트 -->
+        <div class="grid-3" id="shop-items-grid" style="min-height: 220px;">
+          <!-- js에서 동적으로 로드 -->
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 하단 네비게이션 (6탭) -->
+    <nav class="bottom-nav">
+      <div class="nav-item" data-href="../index.html">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">홈</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="wake.html">
+        <span class="nav-icon">⏰</span>
+        <span class="nav-label">기상</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="calendar.html">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">캘린더</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="friends.html">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">친구</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item active" data-href="workshop.html">
+        <span class="nav-icon">🧶</span>
+        <span class="nav-label">공방</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="gallery.html">
+        <span class="nav-icon">🖼️</span>
+        <span class="nav-label">갤러리</span>
+        <span class="nav-dot"></span>
+      </div>
+    </nav>
+  </main>
+
+  <!-- 구매 의사 확인 모달 -->
+  <div class="overlay" id="shop-overlay"></div>
+  <div class="modal" id="purchase-modal">
+    <div class="modal-handle"></div>
+    <h3 class="text-center font-bold" style="font-size: var(--font-size-lg); margin-bottom: var(--space-3);" id="purchase-title" data-i18n="workshop.modal.purchaseTitle">아이템 구매</h3>
+    <p class="text-center text-muted" style="font-size: var(--font-size-sm); margin-bottom: var(--space-5);" id="purchase-desc" data-i18n="workshop.modal.purchaseDesc">
+      아이템을 구매할까요?
+    </p>
+    <div class="flex flex-col gap-3">
+      <button class="btn btn-primary" id="btn-purchase-confirm" data-i18n="shop.button.purchaseConfirm">구매 완료</button>
+      <button class="btn btn-secondary" id="btn-close-purchase-modal" data-i18n="shop.button.cancel">취소</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initCommon, showToast } from '../js/app.js';
+    import { t } from '../js/i18n.js';
+    import { getSheep } from '../js/storage.js';
+    import { renderRoom } from '../js/room.js';
+    import { 
+      getItemsByCategory, 
+      findItem, 
+      purchaseItem, 
+      toggleEquip, 
+      buildShopItemHTML, 
+      buildCategoryTabsHTML 
+    } from '../js/shop.js';
+    import { getItems } from '../js/storage.js';
+    import { enableWearableDrag, getItemImagePath, saveWearablePlacement, WEARABLE_SLOTS } from '../js/decor.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCommon();
+
+      const woolCount = document.getElementById('wool-count');
+      const roomPreviewContainer = document.getElementById('room-preview-container');
+      const categoryTabs = document.getElementById('category-tabs');
+      const shopItemsGrid = document.getElementById('shop-items-grid');
+
+      const shopOverlay = document.getElementById('shop-overlay');
+      const purchaseModal = document.getElementById('purchase-modal');
+      const purchaseTitle = document.getElementById('purchase-title');
+      const purchaseDesc = document.getElementById('purchase-desc');
+      const btnPurchaseConfirm = document.getElementById('btn-purchase-confirm');
+
+      let currentCategory = 'all';
+      let pendingPurchaseItemId = null;
+
+      function refreshUI() {
+        const sheep = getSheep();
+        woolCount.textContent = sheep.wool;
+
+        // 방 렌더링
+        renderRoom(roomPreviewContainer, null, undefined, 'idle', '../');
+        enableWearableDrag(roomPreviewContainer, {
+          onSave: () => showToast(t('shop.toast.positionSaved'), 'success'),
+        });
+
+        // 카테고리 탭 그리기
+        categoryTabs.innerHTML = buildCategoryTabsHTML(currentCategory);
+        
+        // 카테고리 탭 클릭 이벤트 핸들러 바인딩
+        document.querySelectorAll('#category-tabs .tab-item').forEach(btn => {
+          btn.addEventListener('click', () => {
+            currentCategory = btn.dataset.category;
+            refreshUI();
+          });
+        });
+
+        // 상점 아이템 그리드 그리기
+        const items = getItems();
+        const catalogList = getItemsByCategory(currentCategory);
+        
+        if (catalogList.length === 0) {
+          shopItemsGrid.innerHTML = `
+            <div class="empty-state w-full" style="grid-column: span 3;">
+              <span class="empty-icon">🛍️</span>
+              <p>${t('shop.emptyState.noItems')}</p>
+            </div>`;
+          return;
+        }
+
+        shopItemsGrid.innerHTML = catalogList.map(item => 
+          buildShopItemHTML(item, items.owned, items.equipped)
+        ).join('');
+
+        // 아이템 클릭 이벤트 바인딩
+        document.querySelectorAll('#shop-items-grid .shop-item').forEach(card => {
+          card.addEventListener('click', () => {
+            const itemId = card.dataset.itemId;
+            handleItemClick(itemId);
+          });
+        });
+      }
+
+      function handleItemClick(itemId) {
+        const item = findItem(itemId);
+        if (!item) return;
+
+        const items = getItems();
+        const isOwned = items.owned.includes(itemId) || item.price === 0;
+
+        if (isOwned) {
+          // 이미 소유중인 아이템이면 장착 토글
+          const res = toggleEquip(itemId);
+          if (res.success) {
+            showToast(res.msg, 'success');
+            refreshUI();
+          } else {
+            showToast(res.msg, 'error');
+          }
+        } else {
+          // 미소유면 구매 팝업
+          const sheep = getSheep();
+          if (sheep.wool < item.price) {
+            showToast(t('shop.toast.notEnoughWool', { missing: item.price }), 'error');
+            return;
+          }
+
+          pendingPurchaseItemId = itemId;
+          purchaseTitle.innerHTML = t('workshop.modal.purchaseTitle');
+          purchaseDesc.innerHTML = `
+            <img src="${getItemImagePath(item.id, '../')}" alt="" style="width:88px;height:88px;object-fit:contain;margin:0 auto 8px;display:block;filter:drop-shadow(0 4px 12px rgba(0,0,0,0.3));" onerror="this.outerHTML='<span style=\'font-size:1.8rem;display:block;margin-bottom:8px\'>${item.icon}</span>'">
+            ${t('workshop.modal.purchaseDesc', { itemName: item.name, price: item.price })}`;
+          
+          shopOverlay.classList.add('active');
+          purchaseModal.classList.add('active');
+        }
+      }
+
+      // 구매 확정
+      btnPurchaseConfirm.addEventListener('click', () => {
+        if (!pendingPurchaseItemId) return;
+
+        const itemId = pendingPurchaseItemId;
+        const item = findItem(itemId);
+        const res = purchaseItem(itemId);
+        if (res.success) {
+          showToast(res.msg, 'success');
+          pendingPurchaseItemId = null;
+
+          purchaseModal.classList.remove('active');
+          shopOverlay.classList.remove('active');
+
+          // 착용형 아이템(악세사리)은 구매 후 강제 장착하지 않고 드래그로 부착하도록 안내
+          const wearableCategories = WEARABLE_SLOTS || ['hat','ribbon','glasses','scarf'];
+          if (item && wearableCategories.includes(item.slot)) {
+            // 렌더를 업데이트하고, 임시 드롭 아이템을 방 프리뷰에 추가
+            renderRoom(roomPreviewContainer, null, undefined, 'idle', '../');
+            const viewport = roomPreviewContainer.querySelector('.room-viewport');
+            if (viewport) {
+              const temp = document.createElement('img');
+              temp.src = getItemImagePath(item.id, '../');
+              temp.alt = item.name;
+              temp.className = 'shop-temp-drag';
+              temp.style.position = 'absolute';
+              temp.style.width = '18%';
+              temp.style.left = '8%';
+              temp.style.top = '8%';
+              temp.style.zIndex = '999';
+              temp.style.cursor = 'grab';
+              temp.style.touchAction = 'none';
+              viewport.appendChild(temp);
+
+              // 시각적 드래그 가이드 (양 wrapper 위치 강조)
+              const wrapper = viewport.querySelector('.room-sheep-wrapper');
+              let guideEl = null;
+              function showGuide() {
+                if (!wrapper) return;
+                const wr = wrapper.getBoundingClientRect();
+                const vp = viewport.getBoundingClientRect();
+                guideEl = document.createElement('div');
+                guideEl.className = 'drag-guide';
+                // 좌표를 viewport 기준 %로 변환하여 절대 위치 지정
+                const left = Math.max(0, Math.min(100, ((wr.left - vp.left) / vp.width) * 100));
+                const top = Math.max(0, Math.min(100, ((wr.top - vp.top) / vp.height) * 100));
+                const width = Math.max(12, Math.min(100, (wr.width / vp.width) * 100));
+                const height = Math.max(12, Math.min(100, (wr.height / vp.height) * 100));
+                guideEl.style.left = `${left}%`;
+                guideEl.style.top = `${top}%`;
+                guideEl.style.width = `${width}%`;
+                guideEl.style.height = `${height}%`;
+                guideEl.style.zIndex = '890';
+                viewport.appendChild(guideEl);
+              }
+              function hideGuide() { if (guideEl) { guideEl.remove(); guideEl = null; } }
+              showGuide();
+
+              // 드래그 로직: 드롭 시 room-sheep-wrapper 내부에 놓이면 장착 처리
+              let tracking = false;
+              const initialPos = { left: temp.style.left, top: temp.style.top };
+              let restoreTimer = null;
+
+              function onPointerDown(e) {
+                e.preventDefault();
+                tracking = true;
+                temp.style.cursor = 'grabbing';
+                try { temp.setPointerCapture(e.pointerId); } catch (_) {}
+                temp.dataset.startX = e.clientX;
+                if (restoreTimer) { clearTimeout(restoreTimer); restoreTimer = null; }
+              }
+              function onPointerMove(e) {
+                if (!tracking) return;
+                const rect = viewport.getBoundingClientRect();
+                const left = ((e.clientX - rect.left) / rect.width) * 100;
+                const top = ((e.clientY - rect.top) / rect.height) * 100;
+                const clampedLeft = Math.max(0, Math.min(100, left));
+                const clampedTop = Math.max(0, Math.min(100, top));
+                temp.style.left = `${clampedLeft}%`;
+                temp.style.top = `${clampedTop}%`;
+                temp.dataset.left = clampedLeft;
+                temp.dataset.top = clampedTop;
+              }
+              function onPointerUp(e) {
+                if (tracking) {
+                  tracking = false;
+                  temp.style.cursor = 'grab';
+                  try { temp.releasePointerCapture(e.pointerId); } catch (_) {}
+                  // 검사: 드롭 위치가 sheep wrapper 안에 있는지
+                  const wrect = wrapper?.getBoundingClientRect();
+                  if (wrect && e.clientX >= wrect.left && e.clientX <= wrect.right && e.clientY >= wrect.top && e.clientY <= wrect.bottom) {
+                    // 장착 처리 및 위치 저장
+                    toggleEquip(item.id);
+                    // 상대 위치 저장 (wrapper 기준)
+                    const relLeft = ((e.clientX - wrect.left) / wrect.width) * 100;
+                    const relTop = ((e.clientY - wrect.top) / wrect.height) * 100;
+                    saveWearablePlacement(item.id, relLeft, relTop);
+                    showToast(t('shop.toast.itemPlacedOnSheep', { itemName: item.name }), 'success');
+                    hideGuide();
+                    temp.remove();
+                    refreshUI();
+                    return;
+                  }
+
+                  // 드롭 실패: 임시 아이템을 원위치로 애니메이션 후 일정 시간 동안 회수(재시도 가능)
+                  const origLeft = initialPos.left || '8%';
+                  const origTop = initialPos.top || '8%';
+                  temp.style.transition = 'left 0.32s ease, top 0.32s ease, transform 0.18s ease';
+                  temp.style.left = origLeft;
+                  temp.style.top = origTop;
+                  temp.style.transform = 'scale(0.98)';
+                  hideGuide();
+                  // 약간의 시간 후에 원상복구 (시각 효과)
+                  setTimeout(() => { temp.style.transform = ''; }, 340);
+                  showToast(t('shop.toast.dragEquipFail'), 'info');
+                  // 유지 후 자동 제거 (3초)
+                  restoreTimer = setTimeout(() => {
+                    try { temp.remove(); } catch (_) {}
+                    refreshUI();
+                  }, 3000);
+                }
+              }
+
+              temp.addEventListener('pointerdown', onPointerDown);
+              temp.addEventListener('pointermove', onPointerMove);
+              temp.addEventListener('pointerup', onPointerUp);
+              temp.addEventListener('pointercancel', onPointerUp);
+            }
+            showToast(t('shop.toast.dragEquipPrompt'), 'info');
+          } else {
+            // 배경/가구 등은 자동으로 장착 처리 (즉시 적용)
+            toggleEquip(itemId);
+            refreshUI();
+          }
+        } else {
+          showToast(res.msg, 'error');
+        }
+      });
+
+      // 취소/팝업 닫기
+      document.getElementById('btn-close-purchase-modal').addEventListener('click', () => {
+        purchaseModal.classList.remove('active');
+        shopOverlay.classList.remove('active');
+        pendingPurchaseItemId = null;
+      });
+
+      shopOverlay.addEventListener('click', () => {
+        purchaseModal.classList.remove('active');
+        shopOverlay.classList.remove('active');
+        pendingPurchaseItemId = null;
+      });
+
+      refreshUI();
+    });
+  </script>
+</body>
+</html>

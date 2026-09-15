@@ -1,0 +1,44 @@
+{
+  "name": "Sleepy Sheep",
+  "short_name": "Shee8lramy",
+  "description": "힐링 수면 메이트 — 쉽라미와 함께하는 수면 관리",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#1a1a3e",
+  "theme_color": "#7c3aed",
+  "lang": "ko",
+  "icons": [
+    {
+      "src": "assets/icon/app_icon_candidate_night.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon/app_icon_candidate_day.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon/app_icon_candidate_mint.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon/app_icon_candidate_sunset.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icon/app_icon_512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    }
+  ]
+}

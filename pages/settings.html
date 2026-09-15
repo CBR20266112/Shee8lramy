@@ -1,0 +1,789 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.title">설정 | Shee8lramy</title>
+  
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    /* BGM 볼륨 슬라이더 CSS */
+    input[type="range"].bgm-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: var(--radius-full);
+      outline: none;
+      cursor: pointer;
+      transition: opacity 0.2s ease;
+    }
+    input[type="range"].bgm-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--color-purple);
+      box-shadow: 0 0 8px rgba(167,139,250,0.5);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    input[type="range"].bgm-slider::-webkit-slider-thumb:hover {
+      transform: scale(1.2);
+    }
+    input[type="range"].bgm-slider:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+
+    .dev-trigger-wrap {
+      display: flex;
+      justify-content: center;
+      padding: var(--space-2) 0 var(--space-6);
+    }
+    .dev-trigger-btn {
+      width: 30px;
+      height: 30px;
+      padding: 0;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 50%;
+      overflow: hidden;
+      cursor: pointer;
+      opacity: 0.28;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      background: rgba(0, 0, 0, 0.2);
+      -webkit-tap-highlight-color: transparent;
+    }
+    .dev-trigger-btn:hover,
+    .dev-trigger-btn.active {
+      opacity: 0.75;
+      box-shadow: 0 0 10px rgba(251, 191, 36, 0.25);
+    }
+    .dev-trigger-btn:active {
+      transform: scale(0.9);
+    }
+    .dev-trigger-btn img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      display: block;
+    }
+  </style>
+</head>
+<body data-page="settings">
+
+  <!-- 밤하늘 배경 -->
+  <div class="background">
+    <canvas id="star-canvas"></canvas>
+    <div class="moon"></div>
+  </div>
+
+  <main class="phone">
+    <!-- 헤더 -->
+    <header class="header">
+      <div class="header-left">
+        <button class="btn-back" onclick="location.href='../index.html'" data-i18n-title="site.backButtonTitle" title="뒤로가기">←</button>
+        <div>
+          <h1 data-i18n="page.heading">환경 설정</h1>
+          <p class="subtitle" data-i18n="page.subtitle">나의 수면 목표와 앱 세팅</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="chip-box" id="wool-display">
+          <span class="icon">🧶</span>
+          <span id="wool-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- 스크롤 영역 -->
+    <div class="content">
+
+      <!-- 수면 목표 설정 카드 -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <h3 class="font-bold" data-i18n="sleepGoal.cardTitle" style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--text-secondary);">💤 나의 수면 목표</h3>
+        
+        <div class="flex flex-col gap-3">
+          <!-- 목표 수면시간 -->
+          <div class="setting-item" style="border-bottom:none; padding:0;">
+            <div class="setting-info">
+              <span class="setting-title" data-i18n="sleepGoal.title">목표 수면 시간</span>
+              <span class="setting-desc" data-i18n="sleepGoal.desc">기본 수면 8시간을 권장해요</span>
+            </div>
+            <div>
+              <select id="select-sleep-goal" class="glass" style="border-radius: var(--radius-sm); border:1px solid var(--glass-border); padding:var(--space-2) var(--space-3); color:#fff; font-size:var(--font-size-sm); background: rgba(0,0,0,0.3);">
+                <option value="360" data-i18n="sleepGoal.option.360">6시간 (360분)</option>
+                <option value="420" data-i18n="sleepGoal.option.420">7시간 (420분)</option>
+                <option value="480" selected data-i18n="sleepGoal.option.480">8시간 (480분)</option>
+                <option value="540" data-i18n="sleepGoal.option.540">9시간 (540분)</option>
+                <option value="600" data-i18n="sleepGoal.option.600">10시간 (600분)</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="divider" style="margin: 8px 0;"></div>
+
+          <!-- 알람 시간 조절 -->
+          <div class="time-input-group">
+            <div class="time-input-card" style="padding:var(--space-3);">
+              <span class="time-input-label" data-i18n="alarm.bed.title">⏰ 취침 알림 시간</span>
+              <input type="time" id="setting-bed-alarm" class="time-input" style="font-size:var(--font-size-lg);" value="22:30">
+            </div>
+            <div class="time-input-card" style="padding:var(--space-3);">
+              <span class="time-input-label" data-i18n="alarm.wake.title">☀️ 기본 기상 시간</span>
+              <input type="time" id="setting-wake-alarm" class="time-input" style="font-size:var(--font-size-lg);" value="07:00">
+            </div>
+          </div>
+          <p class="text-muted" style="font-size: var(--font-size-2xs); line-height: 1.5; margin-top: var(--space-2);" data-i18n-html="alarm.hint">
+            실제 모닝콜은 <strong>수면 탭</strong>에서 입력한 기상 시간에 울립니다. 위 값은 처음 입력 시 기본값으로 쓰여요.
+          </p>
+
+          <div class="divider" style="margin: 8px 0;"></div>
+
+          <!-- 모닝콜 간편 모드 -->
+          <div class="setting-item" style="border-bottom:none; padding:0;">
+            <div class="setting-info">
+              <span class="setting-title" data-i18n="morningCallSimple.title">🔕 모닝콜 간편 끄기</span>
+              <span class="setting-desc" data-i18n="morningCallSimple.desc">켜면 쓰다듬기/먹이주기 없이 알람 끄기 버튼만 표시됩니다.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="switch-morningcall-simple">
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+          <div class="setting-item" style="border-bottom:none; padding:0; margin-top: var(--space-3);">
+            <div class="setting-info">
+              <span class="setting-title" data-i18n="morningCallPreset.title">🎵 모닝콜 사운드</span>
+              <span class="setting-desc" data-i18n="morningCallPreset.desc">부드럽고 따뜻한 아침 인사를 고를 수 있어요.</span>
+            </div>
+            <select id="select-morningcall-preset" class="glass" style="border-radius: var(--radius-sm); border:1px solid var(--glass-border); padding:var(--space-2) var(--space-3); color:#fff; font-size:var(--font-size-sm); background: rgba(0,0,0,0.3);">
+              <option value="dreamy" data-i18n="morningCallPreset.option.dreamy">Shee8lramy Morning</option>
+              <option value="gentle" data-i18n="morningCallPreset.option.gentle">Gentle Bell</option>
+              <option value="cozy" data-i18n="morningCallPreset.option.cozy">Cozy Morning</option>
+            </select>
+          </div>
+          <div class="flex gap-2" style="margin-top: var(--space-3);">
+            <button type="button" class="btn btn-secondary w-full" id="btn-test-morningcall-now" data-i18n="morningCall.now">지금 테스트</button>
+            <button type="button" class="btn btn-secondary w-full" id="btn-test-morningcall-minute" data-i18n="morningCall.minute">1분 뒤 테스트</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 앱 옵션 스위치 설정 카드 -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); margin-bottom: var(--space-2); color: var(--text-secondary);" data-i18n="appSettings.title">⚙️ 앱 설정</h3>
+        
+        <div class="flex flex-col">
+          <!-- 다크모드 -->
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-title" data-i18n="darkMode.title">🌙 다크 모드 테마</span>
+              <span class="setting-desc" data-i18n="darkMode.desc">밤하늘 밤 분위기로 변경합니다.</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="switch-dark-mode" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <!-- 푸쉬 알림 -->
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-title" data-i18n="notify.title">🔔 푸시 알림 수신</span>
+              <span class="setting-desc" data-i18n="notify.desc">백그라운드 모닝콜 알림 (브라우저 알림 허용 필요)</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="switch-notify" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <!-- 효과음 -->
+          <div class="setting-item" style="flex-direction: column; align-items: stretch; gap: 8px;">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div class="setting-info">
+                <span class="setting-title" data-i18n="bgm.title">🎵 오르골 배경음악</span>
+                <span class="setting-desc" data-i18n="bgm.desc">잔잔한 오르골 멜로디 (홈 화면 자동 재생)</span>
+              </div>
+              <label class="switch">
+                <input type="checkbox" id="switch-bgmusic" checked>
+                <span class="switch-slider"></span>
+              </label>
+            </div>
+            <!-- BGM 볼륨 슬라이더 -->
+            <div id="bgm-volume-container" style="display: flex; align-items: center; gap: var(--space-3); margin-top: 4px; padding-left: 4px; transition: opacity 0.2s ease;">
+              <span style="font-size: 0.9rem;">🔊</span>
+              <input type="range" class="bgm-slider" id="slider-bgm-vol" min="0" max="1" step="0.05" value="0.18">
+              <span id="bgm-vol-val" style="font-size: var(--font-size-xs); color: var(--text-muted); width: 32px; text-align: right;">18%</span>
+            </div>
+          </div>
+
+          <!-- 진동 -->
+          <div class="setting-item">
+            <div class="setting-info">
+              <span class="setting-title" data-i18n="vibrate.title">📳 햅틱 진동 효과</span>
+              <span class="setting-desc" data-i18n="vibrate.desc">기기 상호작용 피드백 진동</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="switch-vibrate" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <!-- 앱 바로가기 -->
+          <div class="setting-item" style="border-bottom:none; flex-direction:column; align-items:stretch; gap:var(--space-2);">
+            <div class="setting-info">
+              <span class="setting-title" data-i18n="pwa.title">📲 앱 바로가기</span>
+              <span class="setting-desc" data-i18n="pwa.desc">홈 화면에 추가하면 앱처럼 바로 열 수 있어요.</span>
+            </div>
+            <button class="btn btn-secondary w-full" id="btn-pwa-install" type="button" data-i18n="pwa.button">바로가기 추가하기</button>
+          </div>
+
+          <!-- 앱 언어 -->
+          <div class="setting-item" style="border-bottom:none; padding-top:var(--space-2);">
+            <div class="setting-info">
+              <span class="setting-title" data-i18n="language.title">🌐 앱 언어</span>
+              <span class="setting-desc" data-i18n="language.desc">앱 UI를 선택한 언어로 표시합니다.</span>
+            </div>
+            <select id="select-language" class="glass" style="border-radius: var(--radius-sm); border:1px solid var(--glass-border); padding:var(--space-2) var(--space-3); color:#fff; font-size:var(--font-size-sm); background: rgba(0,0,0,0.3); min-width: 9rem;">
+              <option value="ko" data-i18n="language.option.ko">한국어</option>
+              <option value="en" data-i18n="language.option.en">English</option>
+              <option value="zh" data-i18n="language.option.zh">中文</option>
+              <option value="ja" data-i18n="language.option.ja">日本語</option>
+            </select>
+          </div>
+
+          <!-- 앱 아이콘 스타일 -->
+          <div class="setting-item" style="border-bottom:none; padding-top:var(--space-2);">
+            <div class="setting-info">
+              <span class="setting-title" data-i18n="privacy.title">개인정보 보호 및 이용약관</span>
+              <span class="setting-desc" data-i18n="privacy.desc">앱의 개인정보 처리 방침을 다시 확인합니다.</span>
+            </div>
+            <button class="btn btn-secondary" id="btn-open-privacy-policy" type="button" style="white-space: normal;" data-i18n="privacy.button">보기</button>
+          </div>
+          <div class="setting-item" style="border-bottom:none; padding-top:var(--space-2);">
+            <div class="setting-info">
+              <span class="setting-title" data-i18n="icon.title">🐑 앱 아이콘</span>
+              <span class="setting-desc" id="icon-mode-desc" data-i18n="icon.desc.time">시간대에 맞게 바뀌어요 (밤·아침·낮·노을)</span>
+            </div>
+            <select id="select-icon-mode" class="glass" style="border-radius: var(--radius-sm); border:1px solid var(--glass-border); padding:var(--space-2) var(--space-3); color:#fff; font-size:var(--font-size-sm); background: rgba(0,0,0,0.3); min-width: 9rem;">
+              <option value="time" data-i18n="icon.option.time">시간대별</option>
+              <option value="daily" data-i18n="icon.option.daily">매일 랜덤</option>
+            </select>
+          </div>
+        </div>
+      </section>
+
+      <!-- AI 수면 메이트 고도화 (선택) -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); margin-bottom: var(--space-2); color: var(--text-secondary);" data-i18n="gemini.title">🤖 AI 수면 메이트 고도화 (선택)</h3>
+        <p class="text-muted" style="font-size: var(--font-size-2xs); line-height: 1.5; margin-bottom: var(--space-3);" data-i18n="gemini.desc">
+          개인 Google Gemini API Key를 입력하면, 고민 상담소에서 프리셋 답변 대신 실시간 맞춤형 힐링 편지를 직접 적어줍니다. 키는 본인 브라우저 로컬에만 안전하게 보관됩니다.
+        </p>
+        
+        <div class="flex flex-col gap-2">
+          <input type="password" id="input-gemini-key" class="glass" 
+            style="width: 100%; border-radius: var(--radius-sm); border: 1px solid var(--glass-border); padding: var(--space-2.5) var(--space-3); color: #fff; font-size: var(--font-size-xs); background: rgba(0,0,0,0.25);"
+            data-i18n-placeholder="gemini.placeholder" placeholder="AI 키 (AIzaSy...) 입력">
+          <div class="flex gap-2">
+            <button class="btn btn-secondary w-full" id="btn-save-gemini-key" style="font-size: var(--font-size-xs); padding: var(--space-2); flex: 1;" data-i18n="gemini.save">저장</button>
+            <button class="btn btn-secondary w-full" id="btn-delete-gemini-key" style="font-size: var(--font-size-xs); padding: var(--space-2); flex: 1; border-color: rgba(252, 165, 165, 0.2); color: var(--color-danger); background: rgba(252, 165, 165, 0.05);" data-i18n="gemini.delete">삭제</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 데이터 초기화 및 개발 정보 -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <h3 class="font-bold" data-i18n="info.title" style="font-size: var(--font-size-sm); margin-bottom: var(--space-2); color: var(--text-secondary);">📂 정보 및 관리</h3>
+        
+        <div class="flex flex-col gap-2" style="font-size:var(--font-size-xs); color:var(--text-muted); line-height: 1.6; margin-bottom: var(--space-4);">
+          <div data-i18n-html="info.version">앱 버전: <strong id="app-version">Shee8lramy v1.96.1</strong></div>
+          <div data-i18n="info.tech">기술 사양: HTML5, CSS3 Variables, ES6 modules, Canvas</div>
+          <div data-i18n="info.changes">이번 업데이트: 코골이 감지, 동의 팝업, 온보딩, Splash, 이용약관, 개인정보처리방침, 다국어 지원 개선, Shee8lramy 상담 개선</div>
+        </div>
+
+        <div class="flex flex-col gap-2">
+          <button class="btn btn-secondary w-full" id="btn-replay-opening" style="background: rgba(167, 139, 250, 0.15); border-color: rgba(167, 139, 250, 0.3); color: var(--color-purple-soft); margin-bottom: 4px;" data-i18n="info.replay">
+            🎬 오프닝 스토리 다시보기
+          </button>
+          
+          <button class="btn btn-secondary w-full" id="btn-reset-data" style="background: rgba(252, 165, 165, 0.1); border-color: rgba(252, 165, 165, 0.3); color: var(--color-danger);" data-i18n="info.resetData">
+            🚨 모든 데이터 초기화
+          </button>
+          
+          <div style="display: flex; justify-content: flex-end; margin-top: var(--space-2);">
+            <button class="btn btn-secondary" id="btn-reset-sheep" style="font-size: var(--font-size-2xs); padding: var(--space-1) var(--space-3); background: rgba(167, 139, 250, 0.1); border-color: rgba(167, 139, 250, 0.3); color: var(--color-purple-soft);" data-i18n="info.resetSheep">
+              🌱 초기의 쉽라미로
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- 🛠️ 개발자 옵션 (아이콘으로 활성화) -->
+      <section class="glass card hidden" id="dev-tools-panel" style="padding: var(--space-4); border: 1px solid rgba(251, 191, 36, 0.3); background: rgba(251, 191, 36, 0.04);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); margin-bottom: var(--space-1); color: #fbbf24;" data-i18n="dev.panel.title">🛠️ 개발자 옵션</h3>
+        <p style="font-size: var(--font-size-2xs); color: rgba(251,191,36,0.6); margin-bottom: var(--space-3); line-height: 1.5;" data-i18n="dev.panel.desc">시연 전용 — 경험치·양털·갤러리를 즉시 조작합니다.</p>
+
+        <div id="dev-status" style="font-size: var(--font-size-xs); color: rgba(255,255,255,0.7); background: rgba(0,0,0,0.2); border-radius: var(--radius-sm); padding: var(--space-2) var(--space-3); margin-bottom: var(--space-3); line-height: 1.8;"></div>
+
+        <div class="flex flex-col gap-2">
+          <div class="flex gap-2">
+            <button class="btn btn-secondary" id="btn-dev-xp-100" style="flex:1; font-size: var(--font-size-xs); padding: var(--space-2); background: rgba(52,211,153,0.12); border-color: rgba(52,211,153,0.35); color: #34d399;" data-i18n="dev.button.xp100">
+              ⚡ XP +100
+            </button>
+            <button class="btn btn-secondary" id="btn-dev-xp-1000" style="flex:1; font-size: var(--font-size-xs); padding: var(--space-2); background: rgba(52,211,153,0.2); border-color: rgba(52,211,153,0.5); color: #34d399; font-weight: 800;" data-i18n="dev.button.xp1000">
+              🚀 XP +1000
+            </button>
+          </div>
+          <div class="flex gap-2">
+            <button class="btn btn-secondary" id="btn-dev-wool-50" style="flex:1; font-size: var(--font-size-xs); padding: var(--space-2); background: rgba(167,139,250,0.12); border-color: rgba(167,139,250,0.35); color: var(--color-purple-soft);" data-i18n="dev.button.wool50">
+              🧶 양털 +50
+            </button>
+            <button class="btn btn-secondary" id="btn-dev-shear" style="flex:1; font-size: var(--font-size-xs); padding: var(--space-2); background: rgba(167,139,250,0.2); border-color: rgba(167,139,250,0.5); color: var(--color-purple-soft); font-weight: 800;" data-i18n="dev.button.shear">
+              ✂️ 털깎기 즉시 가능
+            </button>
+          </div>
+          <button class="btn btn-secondary w-full" id="btn-dev-unlock-gallery" style="font-size: var(--font-size-xs); padding: var(--space-2); background: rgba(251,191,36,0.12); border-color: rgba(251,191,36,0.35); color: #fbbf24;" data-i18n="dev.button.unlockGallery">
+            🖼️ 갤러리 전체 해금
+          </button>
+        </div>
+      </section>
+
+      <div class="dev-trigger-wrap">
+        <button type="button" id="btn-dev-trigger" class="dev-trigger-btn" data-i18n-title="dev.triggerTitle" data-i18n-aria-label="dev.triggerTitle" title="Developer Options" aria-label="Developer Options">
+          <img src="../assets/icon/dev.jpg" alt="">
+        </button>
+      </div>
+
+    </div>
+
+    <!-- 하단 네비게이션 -->
+    <nav class="bottom-nav">
+      <div class="nav-item" data-href="../index.html">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label" data-i18n="nav.home">홈</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="sleep.html">
+        <span class="nav-icon">🌙</span>
+        <span class="nav-label" data-i18n="nav.sleep">수면</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="workshop.html">
+        <span class="nav-icon">🧶</span>
+        <span class="nav-label" data-i18n="nav.workshop">공방</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="friends.html">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label" data-i18n="nav.friends">친구</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="gallery.html">
+        <span class="nav-icon">🖼️</span>
+        <span class="nav-label" data-i18n="nav.gallery">갤러리</span>
+        <span class="nav-dot"></span>
+      </div>
+    </nav>
+  </main>
+
+  <div class="overlay" id="privacy-overlay"></div>
+  <div class="modal" id="privacy-modal" style="max-width: 92%; width: 360px;">
+    <div class="modal-handle"></div>
+    <h3 class="font-bold text-center" style="font-size: var(--font-size-lg); margin-bottom: var(--space-4);" data-i18n="privacy.modal.title">개인정보 보호 및 이용약관</h3>
+    <div class="text-muted" style="font-size: var(--font-size-sm); line-height:1.7; margin-bottom: var(--space-4);" data-i18n-html="privacy.modal.text">
+      Shee8lramy는 이 앱에서 사용하는 모든 데이터를 브라우저 로컬에 안전하게 저장합니다.<br>
+      개인 식별 정보는 수집하지 않으며, 이용 기록은 오직 앱 동작과 설정 보존을 위해 저장됩니다.
+    </div>
+    <div class="flex flex-col gap-3">
+      <button class="btn btn-secondary w-full" id="btn-close-privacy-modal" data-i18n="privacy.modal.close">닫기</button>
+    </div>
+  </div>
+
+  <script type="module">
+    import { initCommon, showToast } from '../js/app.js';
+    import { getSheep, saveSheep, getSettings, saveSettings, clearAll, resetSheep, getPrivacyConsent, setPrivacyConsent } from '../js/storage.js';
+    import { GROWTH_TABLE, APP_VERSION } from '../js/constants.js';
+    import { startOpening } from '../js/opening.js';
+    import { saveMorningCallSchedule } from '../js/morningcall.js';
+    import { promptInstall, isAppInstalled } from '../js/pwa-install.js';
+    import { applyAppIcons, getIconModeLabel } from '../js/app-icon.js';
+    import { initSound, isBgmEnabled, setBgmEnabled, startBgm, stopBgm, resumeAudio, getBgmVolume, setBgmVolume } from '../js/sound.js';
+    import { isDevModeEnabled, setDevModeEnabled, unlockAllGallery } from '../js/dev-tools.js';
+    import { applyTranslations, t } from '../js/i18n.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCommon();
+      initSound();
+
+      const woolCount = document.getElementById('wool-count');
+      const selectSleepGoal = document.getElementById('select-sleep-goal');
+      const settingBedAlarm = document.getElementById('setting-bed-alarm');
+      const settingWakeAlarm = document.getElementById('setting-wake-alarm');
+
+      const switchDarkMode = document.getElementById('switch-dark-mode');
+      const switchNotify = document.getElementById('switch-notify');
+      const switchBgMusic = document.getElementById('switch-bgmusic');
+      const switchVibrate = document.getElementById('switch-vibrate');
+      const switchMorningCallSimple = document.getElementById('switch-morningcall-simple');
+      const selectMorningCallPreset = document.getElementById('select-morningcall-preset');
+      const selectIconMode = document.getElementById('select-icon-mode');
+      const selectLanguage = document.getElementById('select-language');
+      const iconModeDesc = document.getElementById('icon-mode-desc');
+      
+      const sliderBgmVol = document.getElementById('slider-bgm-vol');
+      const bgmVolVal = document.getElementById('bgm-vol-val');
+      const bgmVolumeContainer = document.getElementById('bgm-volume-container');
+
+      const btnResetData = document.getElementById('btn-reset-data');
+      const btnResetSheep = document.getElementById('btn-reset-sheep');
+      const btnReplayOpening = document.getElementById('btn-replay-opening');
+
+      const inputGeminiKey = document.getElementById('input-gemini-key');
+      const btnSaveGeminiKey = document.getElementById('btn-save-gemini-key');
+      const btnDeleteGeminiKey = document.getElementById('btn-delete-gemini-key');
+      const btnPwaInstall = document.getElementById('btn-pwa-install');
+      const btnOpenPrivacyPolicy = document.getElementById('btn-open-privacy-policy');
+      const privacyOverlay = document.getElementById('privacy-overlay');
+      const privacyModal = document.getElementById('privacy-modal');
+      const btnClosePrivacyModal = document.getElementById('btn-close-privacy-modal');
+
+      let settings = getSettings();
+
+      function refreshUI() {
+        const sheep = getSheep();
+        woolCount.textContent = sheep.wool;
+
+        // 세팅 데이터 적용
+        selectSleepGoal.value = settings.sleepGoal;
+        settingBedAlarm.value = settings.bedAlarm;
+        settingWakeAlarm.value = settings.wakeAlarm;
+
+        switchDarkMode.checked = settings.darkMode;
+        switchNotify.checked = settings.notification;
+        switchBgMusic.checked = isBgmEnabled();
+        switchVibrate.checked = settings.vibration;
+        switchMorningCallSimple.checked = settings.morningCallSimple === true;
+        if (selectMorningCallPreset) {
+          selectMorningCallPreset.value = settings.morningCallPreset || 'dreamy';
+        }
+        if (selectIconMode) {
+          selectIconMode.value = settings.iconMode === 'daily' ? 'daily' : 'time';
+          if (iconModeDesc) {
+            iconModeDesc.textContent = settings.iconMode === 'daily'
+              ? t('icon.desc.daily', settings.language)
+              : t('icon.desc.time', settings.language);
+          }
+        }
+        if (selectLanguage) {
+          selectLanguage.value = settings.language || 'en';
+        }
+
+        // BGM 볼륨 슬라이더 설정
+        const bgmVol = getBgmVolume();
+        sliderBgmVol.value = bgmVol;
+        bgmVolVal.textContent = Math.round(bgmVol * 100) + '%';
+        updateBgmSliderState(isBgmEnabled());
+
+        // Gemini API Key 로드
+        inputGeminiKey.value = settings.geminiApiKey || '';
+
+        if (btnPwaInstall) {
+          btnPwaInstall.textContent = isAppInstalled()
+            ? t('pwa.button.installed', settings.language)
+            : t('pwa.button', settings.language);
+          btnPwaInstall.disabled = isAppInstalled();
+        }
+      }
+
+      function updateBgmSliderState(enabled) {
+        sliderBgmVol.disabled = !enabled;
+        if (enabled) {
+          bgmVolumeContainer.style.opacity = '1';
+        } else {
+          bgmVolumeContainer.style.opacity = '0.5';
+        }
+      }
+
+      function updateSetting(key, val) {
+        settings[key] = val;
+        saveSettings(settings);
+        showToast(t('toast.saved', {}, settings.language), 'success');
+      }
+
+      function showPrivacyModal() {
+        privacyOverlay?.classList.add('active');
+        privacyModal?.classList.add('active');
+      }
+
+      function hidePrivacyModal() {
+        privacyOverlay?.classList.remove('active');
+        privacyModal?.classList.remove('active');
+      }
+
+      // 이벤트 리스너들
+      selectSleepGoal.addEventListener('change', () => {
+        updateSetting('sleepGoal', parseInt(selectSleepGoal.value));
+      });
+
+      settingBedAlarm.addEventListener('change', () => {
+        updateSetting('bedAlarm', settingBedAlarm.value);
+        saveMorningCallSchedule(settingBedAlarm.value, settingWakeAlarm.value);
+      });
+
+      settingWakeAlarm.addEventListener('change', () => {
+        updateSetting('wakeAlarm', settingWakeAlarm.value);
+        saveMorningCallSchedule(settingBedAlarm.value, settingWakeAlarm.value);
+      });
+
+      switchDarkMode.addEventListener('change', () => {
+        updateSetting('darkMode', switchDarkMode.checked);
+      });
+
+      switchNotify.addEventListener('change', async () => {
+        updateSetting('notification', switchNotify.checked);
+        if (switchNotify.checked) {
+          const { requestNotificationPermission } = await import('../js/pwa-alarm.js');
+          await requestNotificationPermission();
+        }
+        window.dispatchEvent(new CustomEvent('ss-alarm-schedule-changed'));
+      });
+
+      switchBgMusic.addEventListener('change', () => {
+        resumeAudio();
+        const on = switchBgMusic.checked;
+        setBgmEnabled(on);
+        updateSetting('bgMusic', on);
+        updateBgmSliderState(on);
+        if (on) {
+          startBgm();
+          showToast(t('toast.bgmOn', {}, settings.language), 'success');
+        } else {
+          stopBgm();
+          showToast(t('toast.bgmOff', {}, settings.language), 'success');
+        }
+      });
+
+      sliderBgmVol.addEventListener('input', () => {
+        resumeAudio();
+        const vol = parseFloat(sliderBgmVol.value);
+        setBgmVolume(vol);
+        bgmVolVal.textContent = Math.round(vol * 100) + '%';
+      });
+
+      switchVibrate.addEventListener('change', () => {
+        updateSetting('vibration', switchVibrate.checked);
+      });
+
+      btnPwaInstall?.addEventListener('click', () => {
+        promptInstall({ showToast }).then(() => refreshUI());
+      });
+
+      switchMorningCallSimple?.addEventListener('change', () => {
+        updateSetting('morningCallSimple', switchMorningCallSimple.checked);
+      });
+
+      selectMorningCallPreset?.addEventListener('change', () => {
+        updateSetting('morningCallPreset', selectMorningCallPreset.value);
+      });
+
+      let morningCallMinuteTestTimer = null;
+
+      document.getElementById('btn-test-morningcall-now')?.addEventListener('click', () => {
+        location.href = '../index.html?morningcall=1';
+      });
+
+      document.getElementById('btn-test-morningcall-minute')?.addEventListener('click', () => {
+        const now = new Date();
+        now.setMinutes(now.getMinutes() + 1);
+        const hh = String(now.getHours()).padStart(2, '0');
+        const mm = String(now.getMinutes()).padStart(2, '0');
+        const wakeTime = `${hh}:${mm}`;
+        settingWakeAlarm.value = wakeTime;
+        updateSetting('wakeAlarm', wakeTime);
+        saveMorningCallSchedule(settingBedAlarm.value, wakeTime);
+        showToast(t('settings.toast.morningCallTestScheduled', { wakeTime }, settings.language), 'success');
+        if (morningCallMinuteTestTimer) clearTimeout(morningCallMinuteTestTimer);
+        morningCallMinuteTestTimer = setTimeout(() => {
+          location.href = '../index.html?morningcall=1';
+        }, 60 * 1000);
+      });
+
+      selectIconMode?.addEventListener('change', () => {
+        const mode = selectIconMode.value === 'daily' ? 'daily' : 'time';
+        updateSetting('iconMode', mode);
+        if (iconModeDesc) {
+          iconModeDesc.textContent = mode === 'daily'
+            ? t('icon.desc.daily', settings.language)
+            : t('icon.desc.time', settings.language);
+        }
+        applyAppIcons({ ...settings, iconMode: mode });
+        window.ssSyncBackgroundAlarm?.();
+        showToast(t('toast.iconMode', { iconMode: getIconModeLabel(mode) }, settings.language), 'success', 2000);
+      });
+
+      selectLanguage?.addEventListener('change', () => {
+        const nextLang = selectLanguage.value;
+        updateSetting('language', nextLang);
+        applyTranslations(nextLang);
+        showToast(t('toast.languageChanged', nextLang), 'success');
+      });
+
+      btnOpenPrivacyPolicy?.addEventListener('click', showPrivacyModal);
+      btnClosePrivacyModal?.addEventListener('click', hidePrivacyModal);
+      privacyOverlay?.addEventListener('click', hidePrivacyModal);
+
+      // 오프닝 스토리 다시보기
+      btnReplayOpening.addEventListener('click', () => {
+        startOpening(document.querySelector('.phone'), true);
+      });
+
+      // 모든 데이터 초기화
+      btnResetData.addEventListener('click', () => {
+        const check = confirm(t('settings.confirm.resetData', {}, settings.language));
+        if (check) {
+          clearAll();
+          showToast(t('settings.toast.resetOk', {}, settings.language), 'success');
+          setTimeout(() => {
+            location.href = '../index.html';
+          }, 1500);
+        }
+      });
+
+      // 초기의 쉽라미로 (양 데이터 초기화)
+      btnResetSheep.addEventListener('click', () => {
+        const check1 = confirm(t('settings.confirm.resetSheep1', {}, settings.language));
+        if (check1) {
+          const check2 = confirm(t('settings.confirm.resetSheep2', {}, settings.language));
+          if (check2) {
+            resetSheep();
+            showToast(t('settings.toast.resetSheep', {}, settings.language), 'success');
+            setTimeout(() => {
+              location.href = '../index.html';
+            }, 1500);
+          }
+        }
+      });
+
+      // ─── 🛠️ 개발자 옵션 ───
+
+      const devPanel = document.getElementById('dev-tools-panel');
+      const btnDevTrigger = document.getElementById('btn-dev-trigger');
+
+      function applyDevModeUI() {
+        const on = isDevModeEnabled();
+        devPanel?.classList.toggle('hidden', !on);
+        btnDevTrigger?.classList.toggle('active', on);
+        if (on) updateDevStatus();
+      }
+
+      btnDevTrigger?.addEventListener('click', () => {
+        const next = !isDevModeEnabled();
+        setDevModeEnabled(next);
+        applyDevModeUI();
+        if (next) showToast(t('dev.toast.enabled', {}, settings.language), 'info');
+      });
+
+      /** XP 추가 후 레벨업/스텝 자동 처리 */
+      function applyDevXP(amount) {
+        const sheep = getSheep();
+        sheep.xp += amount;
+
+        // 레벨업 루프
+        let leveled = false;
+        while (sheep.xp >= sheep.xpToNext) {
+          sheep.xp       -= sheep.xpToNext;
+          sheep.level    += 1;
+          sheep.xpToNext  = Math.round(sheep.xpToNext * 1.3);
+
+          // step: 3레벨마다 1씩 증가, 최대 10
+          const newStep = Math.min(Math.floor((sheep.level - 1) / 3) + 1, 10);
+          if (newStep > sheep.step) {
+            sheep.step       = newStep;
+            sheep.woolGrowth = (sheep.woolGrowth ?? 0) + 1; // 성장도 +1
+          }
+          leveled = true;
+        }
+
+        saveSheep(sheep);
+        updateDevStatus();
+        refreshUI();
+
+        if (leveled) {
+          showToast(`🎉 레벨업! Lv.${sheep.level} · Step ${sheep.step} 도달!`, 'success');
+        } else {
+          showToast(`⚡ XP +${amount} 추가됨 (현재 ${sheep.xp} / ${sheep.xpToNext})`, 'success');
+        }
+      }
+
+      /** 시연 상태 패널 갱신 */
+      function updateDevStatus() {
+        const sheep = getSheep();
+        const stepName = ['새끼양','솜털양','통통양','포실양','뭉실양','구름양','복슬양','솜구름','털뭉치','성체양'][Math.min(sheep.step - 1, 9)];
+        document.getElementById('dev-status').innerHTML =
+          `Lv.<b>${sheep.level}</b> &nbsp;|&nbsp; Step <b>${sheep.step}</b> ${stepName} &nbsp;|&nbsp; XP <b>${sheep.xp}</b>/<b>${sheep.xpToNext}</b> &nbsp;|&nbsp; 양털 <b>${sheep.wool}🧶</b> &nbsp;|&nbsp; 털성장 <b>${sheep.woolGrowth}</b>/3`;
+      }
+
+      document.getElementById('btn-dev-xp-100').addEventListener('click', () => applyDevXP(100));
+      document.getElementById('btn-dev-xp-1000').addEventListener('click', () => applyDevXP(1000));
+
+      document.getElementById('btn-dev-wool-50').addEventListener('click', () => {
+        const sheep = getSheep();
+        sheep.wool += 50;
+        saveSheep(sheep);
+        updateDevStatus();
+        refreshUI();
+        showToast(t('dev.toast.woolAdded', {}, settings.language), 'success');
+      });
+
+      document.getElementById('btn-dev-shear').addEventListener('click', () => {
+        const sheep = getSheep();
+        sheep.woolGrowth = 3;
+        sheep.canShear   = true;
+        saveSheep(sheep);
+        updateDevStatus();
+        refreshUI();
+        showToast(t('dev.toast.shearReady', {}, settings.language), 'success');
+      });
+
+      document.getElementById('btn-dev-unlock-gallery')?.addEventListener('click', () => {
+        unlockAllGallery();
+        showToast(t('dev.toast.galleryUnlocked', {}, settings.language), 'success');
+      });
+
+      applyDevModeUI();
+
+      // Gemini API Key 저장
+      btnSaveGeminiKey.addEventListener('click', () => {
+        const key = inputGeminiKey.value.trim();
+        if (!key) {
+          showToast(t('gemini.toast.invalidKey', {}, settings.language), 'error');
+          inputGeminiKey.focus();
+          return;
+        }
+        settings.geminiApiKey = key;
+        saveSettings(settings);
+        showToast(t('gemini.toast.saved', {}, settings.language), 'success');
+      });
+
+      // Gemini API Key 삭제
+      btnDeleteGeminiKey.addEventListener('click', () => {
+        inputGeminiKey.value = '';
+        settings.geminiApiKey = '';
+        saveSettings(settings);
+        showToast(t('gemini.toast.deleted', {}, settings.language), 'info');
+      });
+
+      document.getElementById('app-version').textContent = `Shee8lramy v${APP_VERSION}`;
+
+      refreshUI();
+    });
+  </script>
+</body>
+</html>

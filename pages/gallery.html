@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>출결 업적 갤러리 | Shee8lramy 쉽알라미</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+</head>
+<body>
+
+  <div class="background">
+    <canvas id="star-canvas"></canvas>
+    <div class="moon"></div>
+  </div>
+
+  <main class="phone">
+    <header class="header">
+      <div class="header-left">
+        <button class="btn-back" onclick="location.href='../index.html'" title="뒤로가기">←</button>
+        <div>
+          <h1>🖼️ 출결 업적 갤러리</h1>
+          <p class="subtitle">출석 연속 달성 & 미션 수행 기념 일러스트 컬렉션</p>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="glass card" style="padding: var(--space-4);">
+        <p class="text-muted" style="font-size: var(--font-size-sm); line-height: 1.6; margin-bottom: var(--space-3);">
+          기상 미션과 출석 스트릭을 달성하여 해금한 학점 방어 스토리를 다시 보세요.
+        </p>
+        <div id="gallery-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-3);"></div>
+        <p id="gallery-empty" class="text-center text-muted hidden" style="font-size:var(--font-size-sm);padding:var(--space-4);">
+          아직 해금된 스토리가 없습니다.<br>매일 출석하고 기상 미션을 완료해보세요!
+        </p>
+      </section>
+
+      <section class="glass card" style="padding: var(--space-4); margin-top: var(--space-3);">
+        <div class="section-header">
+          <h3 class="font-bold" style="font-size: var(--font-size-sm); color: var(--text-secondary);">🎨 캐릭터 일러스트 수집품</h3>
+        </div>
+        <div id="gallery-singles-grid" style="display:grid;grid-template-columns:repeat(3,1fr);gap:var(--space-2);"></div>
+      </section>
+
+      <section class="glass card" style="padding: var(--space-4); margin-top: var(--space-3);">
+        <div class="section-header">
+          <h3 class="font-bold" style="font-size: var(--font-size-sm); color: var(--text-secondary);">📰 대학생 생존 4컷 만화</h3>
+        </div>
+        <div id="gallery-strips-grid" style="display:grid;grid-template-columns:repeat(2,1fr);gap:var(--space-2);"></div>
+      </section>
+    </div>
+
+    <!-- 하단 네비게이션 (6탭) -->
+    <nav class="bottom-nav">
+      <div class="nav-item" data-href="../index.html">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">홈</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="wake.html">
+        <span class="nav-icon">⏰</span>
+        <span class="nav-label">기상</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="calendar.html">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">캘린더</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="friends.html">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">친구</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="workshop.html">
+        <span class="nav-icon">🧶</span>
+        <span class="nav-label">공방</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item active" data-href="gallery.html">
+        <span class="nav-icon">🖼️</span>
+        <span class="nav-label">갤러리</span>
+        <span class="nav-dot"></span>
+      </div>
+    </nav>
+  </main>
+
+  <script type="module">
+    import { initCommon } from '../js/app.js';
+    import { t } from '../js/i18n.js';
+    import { getItem } from '../js/storage.js';
+    import { ATTENDANCE_STORIES, ATTENDANCE_SINGLE_COUNT, ATTENDANCE_STRIP_COUNT } from '../js/constants.js';
+    import { getAttendance, getStoryImages, getStoryCover, isStoryUnlocked, getAssetPrefix, getCollectedSingleItems, getCollectedStripItems, singleIdFromIndex, stripIdFromIndex, getSingleIllustPath, getStripIllustPath, getSingleIllustTitle, getStripIllustTitle } from '../js/attendance.js';
+    import { startImageSlideshow, startOpening } from '../js/opening.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCommon();
+
+      const grid = document.getElementById('gallery-grid');
+      const empty = document.getElementById('gallery-empty');
+      const phone = document.querySelector('.phone');
+      const prefix = getAssetPrefix();
+      const openingViewed = !!getItem('ss_opening_viewed');
+
+      const items = [];
+
+      if (openingViewed) {
+        items.push({
+          id: 'opening',
+          title: t('gallery.openingStory'),
+          cover: `${prefix}assets/sheep/Opening/opening_1.png`,
+          unlocked: true,
+          onView: () => startOpening(phone, true),
+        });
+      } else {
+        items.push({
+          id: 'opening',
+          title: t('gallery.openingStory'),
+          cover: `${prefix}assets/sheep/Opening/opening_1.png`,
+          unlocked: false,
+        });
+      }
+
+      ATTENDANCE_STORIES.forEach(story => {
+        const unlocked = isStoryUnlocked(story.id);
+        const storyTitle = t(story.titleKey) || story.title;
+        items.push({
+          id: story.id,
+          title: storyTitle,
+          cover: getStoryCover(story),
+          unlocked,
+          onView: () => startImageSlideshow(phone, getStoryImages(story), {
+            hintText: t('gallery.storyTapHint', { title: storyTitle }),
+          }),
+        });
+      });
+
+      const unlockedCount = items.filter(i => i.unlocked).length;
+      if (unlockedCount === 0) {
+        empty.classList.remove('hidden');
+      } else {
+        empty.classList.add('hidden');
+      }
+
+      items.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'glass';
+        card.style.cssText = 'border-radius:var(--radius-md);overflow:hidden;cursor:pointer;opacity:' + (item.unlocked ? '1' : '0.45') + ';';
+        card.innerHTML = `
+          <div style="aspect-ratio:4/3;background:rgba(0,0,0,0.3);display:flex;align-items:center;justify-content:center;overflow:hidden;">
+            <img src="${item.cover}" alt="${item.title}" style="width:100%;height:100%;object-fit:cover;${item.unlocked ? '' : 'filter:grayscale(1) brightness(0.5);'}">
+          </div>
+          <div style="padding:var(--space-2);">
+            <div style="font-size:var(--font-size-xs);font-weight:800;">${item.unlocked ? '' : '🔒 '}${item.title}</div>
+          </div>
+        `;
+        if (item.unlocked && item.onView) {
+          card.addEventListener('click', item.onView);
+        }
+        grid.appendChild(card);
+      });
+
+      function renderCollectionGrid(container, collected, totalCount, makeId, makePath, makeTitle, columnsType) {
+        if (!container) return;
+        const collectedIds = new Set(collected.map(item => item.id));
+        const previewCount = Math.min(totalCount, collected.length + 6);
+        const cards = [];
+
+        for (let i = 1; i <= previewCount; i++) {
+          const id = makeId(i);
+          const unlocked = collectedIds.has(id);
+          const item = collected.find(entry => entry.id === id) || {
+            id,
+            title: makeTitle(id),
+            cover: makePath(id),
+          };
+          cards.push({ ...item, unlocked });
+        }
+
+        container.innerHTML = cards.map(item => `
+          <div class="glass" style="border-radius:var(--radius-md);overflow:hidden;opacity:${item.unlocked ? '1' : '0.42'};">
+            <div style="aspect-ratio:${columnsType === 'strip' ? '4/3' : '1'};background:rgba(0,0,0,0.25);overflow:hidden;position:relative;">
+              <img src="${item.cover}" alt="${item.title}" style="width:100%;height:100%;object-fit:cover;${item.unlocked ? '' : 'filter:grayscale(1) brightness(0.45);'}">
+              ${item.unlocked ? '' : '<div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:1.2rem;">🔒</div>'}
+            </div>
+            <div style="padding:var(--space-2);font-size:var(--font-size-2xs);font-weight:800;line-height:1.3;">
+              ${item.unlocked ? item.title : t('gallery.lockedByAttendance')}
+            </div>
+          </div>
+        `).join('');
+      }
+
+      renderCollectionGrid(
+        document.getElementById('gallery-singles-grid'),
+        getCollectedSingleItems(),
+        ATTENDANCE_SINGLE_COUNT,
+        singleIdFromIndex,
+        getSingleIllustPath,
+        getSingleIllustTitle,
+        'single',
+      );
+
+      renderCollectionGrid(
+        document.getElementById('gallery-strips-grid'),
+        getCollectedStripItems(),
+        ATTENDANCE_STRIP_COUNT,
+        stripIdFromIndex,
+        getStripIllustPath,
+        getStripIllustTitle,
+        'strip',
+      );
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>친구 & 출결 공동체 | Shee8lramy 쉽알라미</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    /* ── 친구 상태 카드 ── */
+    .friend-status-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      position: relative;
+      overflow: hidden;
+    }
+    .friend-status-card:hover { background: var(--glass-bg-light); transform: translateY(-1px); }
+    .friend-status-card::before {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      width: 3px;
+      border-radius: 0 2px 2px 0;
+    }
+    .friend-status-card.status-green::before { background: #6bcb77; }
+    .friend-status-card.status-yellow::before { background: #ffd93d; }
+    .friend-status-card.status-red::before { background: #ff6b6b; }
+    .friend-status-card.status-purple::before { background: var(--color-purple); }
+
+    .friend-avatar-wrap {
+      position: relative;
+      flex-shrink: 0;
+    }
+    .friend-avatar {
+      width: 44px; height: 44px;
+      border-radius: 50%;
+      background: rgba(167,139,250,0.15);
+      border: 2px solid var(--glass-border);
+      overflow: hidden;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.5rem;
+    }
+    .friend-avatar img { width: 100%; height: 100%; object-fit: cover; }
+    .friend-status-dot {
+      position: absolute;
+      right: -1px; bottom: -1px;
+      width: 12px; height: 12px;
+      border-radius: 50%;
+      border: 2px solid #0f0c29;
+    }
+    .status-dot-green { background: #6bcb77; }
+    .status-dot-yellow { background: #ffd93d; }
+    .status-dot-red { background: #ff6b6b; }
+    .status-dot-purple { background: var(--color-purple); }
+
+    .friend-info { flex: 1; min-width: 0; }
+    .friend-name {
+      font-size: var(--font-size-sm);
+      font-weight: 800;
+      color: var(--text-primary);
+      margin-bottom: 2px;
+    }
+    .friend-status-text {
+      font-size: var(--font-size-xs);
+      color: var(--text-secondary);
+      line-height: 1.4;
+    }
+    .friend-gpa {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      color: var(--text-muted);
+      flex-shrink: 0;
+      text-align: right;
+    }
+    .friend-gpa .gpa-num {
+      font-size: var(--font-size-sm);
+      font-weight: 900;
+      display: block;
+    }
+    .gpa-high { color: var(--color-warning); }
+    .gpa-mid  { color: var(--color-success); }
+    .gpa-low  { color: var(--color-danger); }
+
+    /* ── 시간표 오버레이 ── */
+    .timetable-overlay {
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      padding: var(--space-3);
+      display: none;
+      margin-top: var(--space-2);
+    }
+    .timetable-overlay.show { display: block; }
+    .overlap-section {
+      background: rgba(107,203,119,0.1);
+      border: 1px solid rgba(107,203,119,0.3);
+      border-radius: var(--radius-sm);
+      padding: var(--space-2) var(--space-3);
+      margin-bottom: var(--space-2);
+    }
+    .overlap-label {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      color: #6bcb77;
+      margin-bottom: var(--space-1);
+    }
+    .overlap-time {
+      font-size: var(--font-size-sm);
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .schedule-row {
+      display: flex;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-1) 0;
+      font-size: var(--font-size-xs);
+      color: var(--text-secondary);
+      border-bottom: 1px solid rgba(255,255,255,0.04);
+    }
+    .schedule-time { font-weight: 700; min-width: 60px; color: var(--text-muted); }
+
+    /* ── 랭킹 섹션 ── */
+    .ranking-item {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-2) var(--space-3);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-sm);
+    }
+    .rank-num {
+      font-size: var(--font-size-sm);
+      font-weight: 900;
+      width: 24px;
+      text-align: center;
+      flex-shrink: 0;
+    }
+    .rank-1 { color: var(--color-warning); }
+    .rank-2 { color: #c0c0c0; }
+    .rank-3 { color: #cd7f32; }
+
+    /* ── 각성/수면 모드 배지 ── */
+    .mode-badge {
+      font-size: 0.6rem;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+    }
+    .mode-awake { background: rgba(107,203,119,0.2); color: #6bcb77; border: 1px solid rgba(107,203,119,0.3); }
+    .mode-late  { background: rgba(255,211,61,0.2);  color: #ffd93d; border: 1px solid rgba(255,211,61,0.3); }
+    .mode-sleep { background: rgba(167,139,250,0.2); color: var(--color-purple); border: 1px solid rgba(167,139,250,0.3); }
+    .mode-crisis { background: rgba(255,107,107,0.2); color: #ff6b6b; border: 1px solid rgba(255,107,107,0.3); }
+  </style>
+</head>
+<body>
+  <div class="background">
+    <canvas id="star-canvas"></canvas>
+    <div class="moon"></div>
+  </div>
+
+  <main class="phone">
+    <header class="header">
+      <div class="header-left">
+        <button class="btn-back" onclick="location.href='../index.html'">←</button>
+        <div>
+          <h1>👥 학점 방어 공동체</h1>
+          <p class="subtitle">친구들의 출결 라이브 현황</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="chip-box" id="wool-display">
+          <span class="icon">🧶</span>
+          <span id="wool-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- 오늘 현황 요약 -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <div class="section-header" style="margin-bottom: var(--space-3);">
+          <span class="section-title">📊 오늘 기상 현황</span>
+          <span class="section-more" id="current-time-display" style="font-size:0.65rem;color:var(--text-muted);"></span>
+        </div>
+        <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: var(--space-2);">
+          <div style="text-align:center;padding:var(--space-3);background:rgba(107,203,119,0.1);border:1px solid rgba(107,203,119,0.2);border-radius:var(--radius-sm);">
+            <div style="font-size:1.5rem;font-weight:900;color:#6bcb77;" id="stat-awake">2</div>
+            <div style="font-size:0.6rem;color:var(--text-muted);">기상완료</div>
+          </div>
+          <div style="text-align:center;padding:var(--space-3);background:rgba(255,211,61,0.1);border:1px solid rgba(255,211,61,0.2);border-radius:var(--radius-sm);">
+            <div style="font-size:1.5rem;font-weight:900;color:#ffd93d;" id="stat-late">1</div>
+            <div style="font-size:0.6rem;color:var(--text-muted);">지각위기</div>
+          </div>
+          <div style="text-align:center;padding:var(--space-3);background:rgba(167,139,250,0.1);border:1px solid rgba(167,139,250,0.2);border-radius:var(--radius-sm);">
+            <div style="font-size:1.5rem;font-weight:900;color:var(--color-purple);" id="stat-sleep">1</div>
+            <div style="font-size:0.6rem;color:var(--text-muted);">꿀잠중</div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 친구 라이브 상태 -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <div class="section-header" style="margin-bottom: var(--space-3);">
+          <span class="section-title">🟢 친구 출결 라이브</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-2);" id="friends-live-list">
+          <!-- JS 렌더링 -->
+        </div>
+      </section>
+
+      <!-- 오늘 공강 메이트 -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <div class="section-header" style="margin-bottom: var(--space-3);">
+          <span class="section-title">🍱 오늘 공강 메이트</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-2);" id="free-time-list">
+          <!-- JS 렌더링 -->
+        </div>
+      </section>
+
+      <!-- 출석률 랭킹 -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <div class="section-header" style="margin-bottom: var(--space-3);">
+          <span class="section-title">🏆 이번 학기 출석률 랭킹</span>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:var(--space-2);" id="attendance-ranking">
+          <!-- JS 렌더링 -->
+        </div>
+      </section>
+
+    </div>
+
+    <nav class="bottom-nav">
+      <div class="nav-item" data-href="../index.html">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">홈</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="wake.html">
+        <span class="nav-icon">⏰</span>
+        <span class="nav-label">기상</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="calendar.html">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">캘린더</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item active" data-href="friends.html">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">친구</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="workshop.html">
+        <span class="nav-icon">🧶</span>
+        <span class="nav-label">공방</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="gallery.html">
+        <span class="nav-icon">🖼️</span>
+        <span class="nav-label">갤러리</span>
+        <span class="nav-dot"></span>
+      </div>
+    </nav>
+  </main>
+
+  <script type="module">
+    import { initCommon, showToast } from '../js/app.js';
+    import { getSheep } from '../js/storage.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCommon();
+      document.getElementById('wool-count').textContent = getSheep().wool;
+
+      // ── 시간 표시 ──
+      function updateTime() {
+        const now = new Date();
+        document.getElementById('current-time-display').textContent =
+          now.toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' });
+      }
+      updateTime();
+      setInterval(updateTime, 60000);
+
+      // ── 더미 친구 데이터 ──
+      const FRIENDS = [
+        {
+          name: '박지호',
+          emoji: '🙂',
+          status: 'green',
+          statusText: '🟢 기상 완료 — 도서관 착석',
+          mode: 'awake',
+          modeLabel: '기상완료',
+          gpa: 3.8,
+          attendRate: 98,
+          schedule: [
+            { time: '09:00', subject: '자료구조론', room: '공학관 201' },
+            { time: '11:00', subject: '운영체제', room: '정보관 305' },
+            { time: '15:00', subject: '알고리즘', room: '공학관 202' },
+          ],
+          freeSlots: ['12:00~13:00', '13:00~15:00'],
+        },
+        {
+          name: '김대호',
+          emoji: '😰',
+          status: 'yellow',
+          statusText: '🚨 지각 위기 — 셔틀 대기 중',
+          mode: 'late',
+          modeLabel: '지각위기',
+          gpa: 2.9,
+          attendRate: 85,
+          schedule: [
+            { time: '09:00', subject: '컴퓨터구조', room: '공학관 301' },
+            { time: '13:00', subject: '데이터베이스', room: '정보관 201' },
+          ],
+          freeSlots: ['11:00~13:00'],
+        },
+        {
+          name: '윤성은',
+          emoji: '😴',
+          status: 'purple',
+          statusText: '😴 아직 꿀잠 중 — 알람 3회 무시',
+          mode: 'sleep',
+          modeLabel: '꿀잠중',
+          gpa: 3.5,
+          attendRate: 92,
+          schedule: [
+            { time: '10:00', subject: '소프트웨어공학', room: '공학관 404' },
+            { time: '14:00', subject: '네트워크', room: '정보관 102' },
+          ],
+          freeSlots: ['12:00~14:00'],
+        },
+        {
+          name: '이서연',
+          emoji: '😤',
+          status: 'red',
+          statusText: '💀 결석 확정 — 어제 밤샘 코딩',
+          mode: 'crisis',
+          modeLabel: '결석위기',
+          gpa: 2.3,
+          attendRate: 70,
+          schedule: [
+            { time: '09:00', subject: '이산수학', room: '수학관 101' },
+          ],
+          freeSlots: ['13:00~18:00'],
+        },
+      ];
+
+      // ── 내 시간표 (겹치기용) ──
+      const MY_FREE_SLOTS = ['12:00~13:00', '13:00~15:00'];
+
+      // ── 친구 목록 렌더링 ──
+      let selectedFriend = null;
+      const liveList = document.getElementById('friends-live-list');
+
+      function renderFriends() {
+        liveList.innerHTML = FRIENDS.map((f, idx) => `
+          <div class="friend-status-card status-${f.status}" data-idx="${idx}">
+            <div class="friend-avatar-wrap">
+              <div class="friend-avatar">${f.emoji}</div>
+              <div class="friend-status-dot status-dot-${f.status}"></div>
+            </div>
+            <div class="friend-info">
+              <div class="friend-name">${f.name} <span class="mode-badge mode-${f.mode}">${f.modeLabel}</span></div>
+              <div class="friend-status-text">${f.statusText}</div>
+            </div>
+            <div class="friend-gpa">
+              <span class="gpa-num ${f.gpa >= 3.5 ? 'gpa-high' : f.gpa >= 2.5 ? 'gpa-mid' : 'gpa-low'}">${f.gpa.toFixed(1)}</span>
+              출석${f.attendRate}%
+            </div>
+          </div>
+          <div class="timetable-overlay" id="timetable-${idx}">
+            <div style="font-size:var(--font-size-xs);font-weight:800;color:var(--text-secondary);margin-bottom:var(--space-2);">📅 ${f.name}의 오늘 시간표</div>
+            ${renderOverlapSlots(f)}
+            ${f.schedule.map(s => `
+              <div class="schedule-row">
+                <span class="schedule-time">${s.time}</span>
+                <span>${s.subject}</span>
+                <span style="color:var(--text-muted);margin-left:auto;font-size:0.65rem;">📍 ${s.room}</span>
+              </div>
+            `).join('')}
+          </div>
+        `).join('');
+
+        liveList.querySelectorAll('.friend-status-card').forEach(card => {
+          card.addEventListener('click', () => {
+            const idx = parseInt(card.dataset.idx);
+            const overlay = document.getElementById(`timetable-${idx}`);
+            const isOpen = overlay.classList.contains('show');
+            document.querySelectorAll('.timetable-overlay').forEach(o => o.classList.remove('show'));
+            if (!isOpen) overlay.classList.add('show');
+          });
+        });
+      }
+
+      function renderOverlapSlots(friend) {
+        const overlaps = friend.freeSlots.filter(s => MY_FREE_SLOTS.includes(s));
+        if (!overlaps.length) return '';
+        return overlaps.map(slot => `
+          <div class="overlap-section">
+            <div class="overlap-label">🎉 공강 겹치는 시간 발견!</div>
+            <div class="overlap-time">${slot} — 학식 메이트 가능!</div>
+          </div>
+        `).join('');
+      }
+
+      // ── 공강 메이트 렌더링 ──
+      function renderFreeTimeList() {
+        const list = document.getElementById('free-time-list');
+        const MY_SLOTS_SET = new Set(MY_FREE_SLOTS);
+        const freeMatches = [];
+
+        FRIENDS.forEach(f => {
+          f.freeSlots.forEach(slot => {
+            if (MY_SLOTS_SET.has(slot)) {
+              freeMatches.push({ name: f.name, slot, emoji: f.emoji, mode: f.mode });
+            }
+          });
+        });
+
+        if (!freeMatches.length) {
+          list.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:var(--font-size-xs);padding:var(--space-3);">😢 오늘 공강 겹치는 친구가 없어요</div>`;
+          return;
+        }
+
+        list.innerHTML = freeMatches.map(m => `
+          <div style="display:flex;align-items:center;gap:var(--space-3);padding:var(--space-2) var(--space-3);background:rgba(107,203,119,0.08);border:1px solid rgba(107,203,119,0.2);border-radius:var(--radius-sm);">
+            <span style="font-size:1.4rem;">${m.emoji}</span>
+            <div style="flex:1;">
+              <div style="font-size:var(--font-size-xs);font-weight:700;color:var(--text-primary);">${m.name}</div>
+              <div style="font-size:var(--font-size-2xs);color:var(--text-muted);">⏰ ${m.slot}</div>
+            </div>
+            <span style="font-size:0.65rem;background:rgba(107,203,119,0.15);color:#6bcb77;border:1px solid rgba(107,203,119,0.3);padding:2px 8px;border-radius:var(--radius-full);font-weight:700;">학식GO!</span>
+          </div>
+        `).join('');
+      }
+
+      // ── 출석률 랭킹 ──
+      function renderRanking() {
+        const sorted = [...FRIENDS].sort((a, b) => b.attendRate - a.attendRate);
+        const list = document.getElementById('attendance-ranking');
+        const medals = ['🥇', '🥈', '🥉'];
+
+        list.innerHTML = sorted.map((f, i) => `
+          <div class="ranking-item">
+            <span class="rank-num ${i < 3 ? 'rank-' + (i+1) : ''}">${medals[i] || (i+1)}</span>
+            <span style="font-size:1.2rem;">${f.emoji}</span>
+            <div style="flex:1;">
+              <div style="font-size:var(--font-size-xs);font-weight:700;color:var(--text-primary);">${f.name}</div>
+              <div style="font-size:var(--font-size-2xs);color:var(--text-muted);">출석률 ${f.attendRate}%</div>
+            </div>
+            <div style="font-size:var(--font-size-sm);font-weight:900;color:${f.attendRate >= 95 ? '#6bcb77' : f.attendRate >= 80 ? '#ffd93d' : '#ff6b6b'};">${f.attendRate}%</div>
+          </div>
+        `).join('');
+      }
+
+      // ── 통계 업데이트 ──
+      function updateStats() {
+        const awake = FRIENDS.filter(f => f.mode === 'awake').length;
+        const late = FRIENDS.filter(f => f.mode === 'late').length;
+        const sleep = FRIENDS.filter(f => f.mode === 'sleep').length;
+        document.getElementById('stat-awake').textContent = awake;
+        document.getElementById('stat-late').textContent = late;
+        document.getElementById('stat-sleep').textContent = sleep;
+      }
+
+      renderFriends();
+      renderFreeTimeList();
+      renderRanking();
+      updateStats();
+    });
+  </script>
+</body>
+</html>

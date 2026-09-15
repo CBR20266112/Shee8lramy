@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.title">ASMR | Shee8lramy</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    .asmr-header-desc {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+      margin-top: 2px;
+      line-height: 1.5;
+    }
+    .now-playing-bar {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: linear-gradient(135deg, rgba(79,70,229,0.2), rgba(167,139,250,0.1));
+      border: 1px solid rgba(167,139,250,0.4);
+      border-radius: var(--radius-md);
+      backdrop-filter: var(--glass-blur-sm);
+      min-height: 56px;
+      transition: all 0.3s ease;
+    }
+    .now-playing-bar.idle { opacity: 0.5; }
+    .playing-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .playing-info { flex: 1; min-width: 0; }
+    .playing-name {
+      font-size: var(--font-size-sm);
+      font-weight: 800;
+      color: var(--text-primary);
+    }
+    .playing-bars {
+      display: flex;
+      align-items: flex-end;
+      gap: 3px;
+      height: 14px;
+      margin-top: 4px;
+    }
+    .playing-bar-wave {
+      width: 3px;
+      background: var(--color-purple);
+      border-radius: 2px;
+      animation: soundWave 0.8s ease-in-out infinite alternate;
+    }
+    .playing-bar-wave:nth-child(1) { animation-delay: 0s; }
+    .playing-bar-wave:nth-child(2) { animation-delay: 0.1s; }
+    .playing-bar-wave:nth-child(3) { animation-delay: 0.2s; }
+    .playing-bar-wave:nth-child(4) { animation-delay: 0.15s; }
+    .playing-bar-wave:nth-child(5) { animation-delay: 0.05s; }
+    @keyframes soundWave {
+      from { height: 3px; opacity: 0.4; }
+      to { height: 14px; opacity: 1; }
+    }
+    .playing-bar-wave.paused {
+      animation: none;
+      height: 4px;
+      opacity: 0.3;
+    }
+    .btn-stop-asmr {
+      background: rgba(252, 165, 165, 0.15);
+      border: 1px solid rgba(252, 165, 165, 0.3);
+      color: #fca5a5;
+      border-radius: var(--radius-md);
+      padding: var(--space-2) var(--space-3);
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .btn-stop-asmr:hover { background: rgba(252, 165, 165, 0.25); }
+    .volume-section {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+    }
+    .volume-icon {
+      font-size: 1rem;
+      flex-shrink: 0;
+      width: 20px;
+      text-align: center;
+    }
+    .volume-label {
+      font-size: var(--font-size-xs);
+      font-weight: 700;
+      color: var(--text-muted);
+      width: 36px;
+      flex-shrink: 0;
+    }
+    input[type="range"].asmr-slider {
+      flex: 1;
+      -webkit-appearance: none;
+      appearance: none;
+      height: 4px;
+      background: rgba(255,255,255,0.15);
+      border-radius: var(--radius-full);
+      outline: none;
+      cursor: pointer;
+    }
+    input[type="range"].asmr-slider::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      width: 16px;
+      height: 16px;
+      border-radius: 50%;
+      background: var(--color-purple);
+      box-shadow: 0 0 8px rgba(167,139,250,0.5);
+      cursor: pointer;
+      transition: transform 0.15s ease;
+    }
+    input[type="range"].asmr-slider::-webkit-slider-thumb:hover { transform: scale(1.2); }
+    .volume-val {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+      width: 36px;
+      text-align: right;
+    }
+    .asmr-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-3);
+    }
+    .asmr-card {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-2);
+      padding: var(--space-4) var(--space-3);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-lg);
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .asmr-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(167,139,250,0.4);
+      box-shadow: var(--shadow-glow-purple);
+    }
+    .asmr-card.playing {
+      border-color: var(--color-purple);
+      background: rgba(167,139,250,0.12);
+      box-shadow: var(--shadow-glow-purple);
+    }
+    .asmr-card.playing::after {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(ellipse at center, rgba(167,139,250,0.08) 0%, transparent 70%);
+      pointer-events: none;
+      animation: pulseGlow 2s ease-in-out infinite;
+    }
+    @keyframes pulseGlow {
+      0%, 100% { opacity: 0.5; }
+      50% { opacity: 1; }
+    }
+    .asmr-emoji {
+      font-size: 2rem;
+      line-height: 1;
+      transition: transform 0.3s ease;
+    }
+    .asmr-card:hover .asmr-emoji,
+    .asmr-card.playing .asmr-emoji { transform: scale(1.15); }
+    .asmr-name {
+      font-size: var(--font-size-xs);
+      font-weight: 800;
+      color: var(--text-primary);
+      line-height: 1.3;
+    }
+    .asmr-desc {
+      font-size: var(--font-size-2xs);
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+    .asmr-badge {
+      position: absolute;
+      top: var(--space-2);
+      right: var(--space-2);
+      font-size: 0.55rem;
+      font-weight: 800;
+      background: var(--color-purple);
+      color: white;
+      padding: 2px 5px;
+      border-radius: var(--radius-full);
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+    .asmr-card.playing .asmr-badge { opacity: 1; }
+    .sfx-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: var(--space-2) 0;
+      gap: var(--space-3);
+    }
+    .sfx-row-info { display: flex; flex-direction: column; gap: 1px; }
+    .sfx-row-title { font-size: var(--font-size-sm); font-weight: 700; color: var(--text-primary); }
+    .sfx-row-desc { font-size: var(--font-size-xs); color: var(--text-muted); line-height: 1.4; }
+    .asmr-cat-tabs {
+      display: flex;
+      gap: var(--space-2);
+      overflow-x: auto;
+      margin-bottom: var(--space-3);
+      padding-bottom: 2px;
+      scrollbar-width: none;
+    }
+    .asmr-cat-tabs::-webkit-scrollbar { display: none; }
+    .asmr-cat-tab {
+      flex-shrink: 0;
+      padding: 6px 12px;
+      border-radius: var(--radius-full);
+      border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-muted);
+      font-size: var(--font-size-2xs);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .asmr-cat-tab.active {
+      border-color: var(--color-purple);
+      background: rgba(167,139,250,0.2);
+      color: #fff;
+    }
+    .asmr-timer-row {
+      display: flex;
+      gap: var(--space-2);
+      flex-wrap: wrap;
+    }
+    .asmr-timer-btn {
+      flex: 1;
+      min-width: 56px;
+      padding: var(--space-2);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.05);
+      color: var(--text-secondary);
+      font-size: var(--font-size-2xs);
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    .asmr-timer-btn.active {
+      border-color: var(--color-purple);
+      background: rgba(167,139,250,0.15);
+      color: #fff;
+    }
+    .asmr-timer-label {
+      font-size: var(--font-size-2xs);
+      color: var(--text-muted);
+      margin-top: var(--space-2);
+      line-height: 1.5;
+    }
+  </style>
+</head>
+<body>
+  <div class="background">
+    <canvas id="star-canvas"></canvas>
+    <div class="moon"></div>
+  </div>
+
+  <main class="phone">
+    <header class="header">
+      <div class="header-left">
+        <button class="btn-back" onclick="location.href='../index.html'" data-i18n-title="common.back" title="Back">‹</button>
+        <div>
+          <h1 data-i18n="page.heading">🎧 ASMR</h1>
+          <p class="subtitle" data-i18n="page.subtitle">잠들기 좋은 사운드 플레이어</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="chip-box" id="wool-display">
+          <span class="icon">🧶</span>
+          <span id="wool-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <section class="glass card" style="padding: var(--space-4);">
+        <div class="now-playing-bar idle" id="now-playing-bar">
+          <div class="playing-icon" id="playing-icon">🎧</div>
+          <div class="playing-info">
+            <div class="playing-name" id="playing-name" data-i18n="asmr.nowPlaying.empty">No sound playing</div>
+            <div class="playing-bars" id="playing-bars">
+              <div class="playing-bar-wave paused"></div>
+              <div class="playing-bar-wave paused"></div>
+              <div class="playing-bar-wave paused"></div>
+              <div class="playing-bar-wave paused"></div>
+              <div class="playing-bar-wave paused"></div>
+            </div>
+          </div>
+          <button class="btn-stop-asmr" id="btn-stop-asmr" style="display:none;" data-i18n-title="home.asmr.stopButtonTitle" title="Stop">⏹</button>
+        </div>
+      </section>
+
+      <section class="glass card" style="padding: var(--space-4);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--text-secondary);" data-i18n="asmr.volume.header">🔊 볼륨 조절</h3>
+        <div style="display:flex; flex-direction:column; gap:var(--space-3);">
+          <div class="volume-section">
+            <span class="volume-icon">🎧</span>
+            <span class="volume-label" data-i18n="asmr.volume.asmr">ASMR</span>
+            <input type="range" class="asmr-slider" id="slider-asmr-vol" min="0" max="1" step="0.05" value="0.6">
+            <span class="volume-val" id="asmr-vol-val">60%</span>
+          </div>
+          <div class="volume-section">
+            <span class="volume-icon">✨</span>
+            <span class="volume-label" data-i18n="asmr.volume.effects">효과음</span>
+            <input type="range" class="asmr-slider" id="slider-sfx-vol" min="0" max="1" step="0.05" value="0.9">
+            <span class="volume-val" id="sfx-vol-val">90%</span>
+          </div>
+        </div>
+
+        <div class="divider" style="margin: var(--space-3) 0;"></div>
+
+        <div class="sfx-row">
+          <div class="sfx-row-info">
+            <span class="sfx-row-title" data-i18n="asmr.interactionSounds.title">상호작용 효과음</span>
+            <span class="sfx-row-desc" data-i18n="asmr.interactionSounds.desc">쓰다듬기, 먹이주기, 버튼 소리를 켜고 끕니다.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="switch-sfx" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="glass card" style="padding: var(--space-4);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--text-secondary);" data-i18n="asmr.sleepTimer.title">⏱ 슬립 타이머</h3>
+        <div id="asmr-timer-section">
+          <div class="asmr-timer-row" data-asmr-timer-row></div>
+          <p class="asmr-timer-label" data-i18n="asmr.sleepTimer.desc">타이머가 끝나면 ASMR과 바이노럴 비트가 함께 정지됩니다.</p>
+        </div>
+        <div class="divider" style="margin: var(--space-3) 0;"></div>
+        <div class="sfx-row">
+          <div class="sfx-row-info">
+            <span class="sfx-row-title" data-i18n="asmr.autoPlay.title">잠자기 중 ASMR 자동 재생</span>
+            <span class="sfx-row-desc" data-i18n="asmr.autoPlay.desc">수면을 시작하면 마지막으로 선택한 소리가 재생됩니다.</span>
+          </div>
+          <label class="switch">
+            <input type="checkbox" id="switch-asmr-autoplay" checked>
+            <span class="switch-slider"></span>
+          </label>
+        </div>
+      </section>
+
+      <section class="glass card" style="padding: var(--space-4);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); margin-bottom: var(--space-2); color: var(--text-secondary);" data-i18n="asmr.binaural.title">〰️ 바이노럴 비트</h3>
+        <p class="asmr-header-desc" style="margin-bottom: var(--space-3);" data-i18n="asmr.binaural.desc">ASMR 아래에 은은하게 깔리는 집중·수면 보조음입니다. 이어폰 착용을 권장해요.</p>
+        <div class="now-playing-bar idle binaural-now-bar" id="binaural-now-bar">
+          <div class="playing-icon">〰️</div>
+          <div class="playing-info">
+            <div class="playing-name" id="binaural-now-label" data-i18n="asmr.binaural.off">Binaural beats off</div>
+          </div>
+          <button class="btn-stop-asmr" id="btn-stop-binaural" style="display:none;" data-i18n-title="home.asmr.stopButtonTitle">⏹</button>
+        </div>
+        <div class="volume-section" style="margin: var(--space-3) 0;">
+          <span class="volume-icon">🔉</span>
+          <span class="volume-label" data-i18n="asmr.volume.binaural">비트</span>
+          <input type="range" class="asmr-slider" id="slider-binaural-vol" min="1" max="100" step="1" value="15">
+          <span class="volume-val" id="binaural-vol-val">15</span>
+        </div>
+        <div class="asmr-grid" id="binaural-grid"></div>
+      </section>
+
+      <section class="glass card" style="padding: var(--space-4);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--text-secondary);" data-i18n="asmr.soundSelection.title">🎵 사운드 선택</h3>
+        <div class="asmr-cat-tabs" id="asmr-category-tabs"></div>
+        <div class="asmr-grid" id="asmr-grid"></div>
+      </section>
+    </div>
+
+    <nav class="bottom-nav">
+      <div class="nav-item" data-href="../index.html">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label" data-i18n="nav.home">홈</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="sleep.html">
+        <span class="nav-icon">🌙</span>
+        <span class="nav-label" data-i18n="nav.sleep">수면</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="workshop.html">
+        <span class="nav-icon">🧶</span>
+        <span class="nav-label" data-i18n="nav.workshop">공방</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="friends.html">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label" data-i18n="nav.friends">친구</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="gallery.html">
+        <span class="nav-icon">🖼️</span>
+        <span class="nav-label" data-i18n="nav.gallery">갤러리</span>
+        <span class="nav-dot"></span>
+      </div>
+    </nav>
+  </main>
+
+  <script type="module">
+    import { initCommon } from '../js/app.js';
+    import { getSheep } from '../js/storage.js';
+    import {
+      initSound, resumeAudio,
+      getSfxVolume, getAsmrVolume, setSfxVolume, setAsmrVolume,
+      isSfxEnabled, setSfxEnabled
+    } from '../js/sound.js';
+    import { initAsmrPage } from '../js/asmr.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCommon();
+      initSound();
+      initAsmrPage();
+
+      document.getElementById('wool-count').textContent = getSheep().wool;
+
+      const sliderAsmr = document.getElementById('slider-asmr-vol');
+      const sliderSfx = document.getElementById('slider-sfx-vol');
+      const asmrVolVal = document.getElementById('asmr-vol-val');
+      const sfxVolVal = document.getElementById('sfx-vol-val');
+      const switchSfx = document.getElementById('switch-sfx');
+
+      sliderAsmr.value = getAsmrVolume();
+      sliderSfx.value = getSfxVolume();
+      asmrVolVal.textContent = Math.round(getAsmrVolume() * 100) + '%';
+      sfxVolVal.textContent = Math.round(getSfxVolume() * 100) + '%';
+      switchSfx.checked = isSfxEnabled();
+
+      sliderAsmr.addEventListener('input', () => {
+        resumeAudio();
+        const v = parseFloat(sliderAsmr.value);
+        setAsmrVolume(v);
+        asmrVolVal.textContent = Math.round(v * 100) + '%';
+      });
+
+      sliderSfx.addEventListener('input', () => {
+        resumeAudio();
+        const v = parseFloat(sliderSfx.value);
+        setSfxVolume(v);
+        sfxVolVal.textContent = Math.round(v * 100) + '%';
+      });
+
+      switchSfx.addEventListener('change', () => setSfxEnabled(switchSfx.checked));
+    });
+  </script>
+</body>
+</html>

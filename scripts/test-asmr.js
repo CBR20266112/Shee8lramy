@@ -1,0 +1,114 @@
+const fs = require('fs');
+const path = require('path');
+(async () => {
+  try {
+    const puppeteer = require('puppeteer-core');
+    const chromeCandidates = [
+      'C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe',
+      'C:\\Program Files\\Microsoft\\Edge\\Application\\msedge.exe'
+    ];
+    const chromePath = chromeCandidates.find(p => fs.existsSync(p));
+    if (!chromePath) {
+      console.error(JSON.stringify({ ok:false, reason: 'no-chrome-found', candidates: chromeCandidates }));
+      process.exit(2);
+    }
+
+    const browser = await puppeteer.launch({
+      executablePath: chromePath,
+      headless: true,
+      args: ['--no-sandbox','--autoplay-policy=no-user-gesture-required']
+    });
+    const page = await browser.newPage();
+
+    await page.evaluateOnNewDocument(() => {
+      (function() {
+        const Orig = window.AudioContext || window.webkitAudioContext;
+        if (!Orig) return;
+        function Wrapped(...args) {
+          const ctx = new Orig(...args);
+          try {
+            window.__sleepy_audio_ctx = ctx;
+            window.__sleepy_audio_ctx_created = true;
+            const origResume = ctx.resume.bind(ctx);
+            ctx.resume = async function() {
+              window.__sleepy_audio_ctx_resumed = true;
+              return origResume();
+            };
+          } catch (e) {
+            // ignore
+          }
+          return ctx;
+        }
+        Wrapped.prototype = Orig.prototype;
+        window.AudioContext = Wrapped;
+        if (window.webkitAudioContext) window.webkitAudioContext = Wrapped;
+      })();
+    });
+
+    const url = 'http://localhost:5500/pages/index.html';
+    await page.goto(url, { waitUntil: 'networkidle2', timeout: 30000 });
+
+    // Emulate a user gesture to enable autoplay
+    try { await page.mouse.click(50, 50); } catch (e) { }
+
+    // Try tingle_soft
+    await page.evaluate(() => {
+      const s = document.createElement('script');
+      s.type = 'module';
+      s.textContent = "import { playAsmr } from '/js/sound.js'; (async ()=>{ try{ playAsmr('tingle_soft',{fadeIn:true}); window.__play_call_ok_soft = true;}catch(e){ window.__play_call_error_soft = String(e);} })();";
+      document.documentElement.appendChild(s);
+    });
+    await page.waitForTimeout(1300);
+
+    // Try tingle_bell
+    await page.evaluate(() => {
+      const s = document.createElement('script');
+      s.type = 'module';
+      s.textContent = "import { playAsmr } from '/js/sound.js'; (async ()=>{ try{ playAsmr('tingle_bell',{fadeIn:true}); window.__play_call_ok_bell = true;}catch(e){ window.__play_call_error_bell = String(e);} })();";
+      document.documentElement.appendChild(s);
+    });
+    await page.waitForTimeout(1300);
+
+    // Try laundry_room
+    await page.evaluate(() => {
+      const s = document.createElement('script');
+      s.type = 'module';
+      s.textContent = "import { playAsmr } from '/js/sound.js'; (async ()=>{ try{ playAsmr('laundry_room',{fadeIn:true}); window.__play_call_ok_laundry = true;}catch(e){ window.__play_call_error_laundry = String(e);} })();";
+      document.documentElement.appendChild(s);
+    });
+    await page.waitForTimeout(1300);
+
+    // Try space_station_night
+    await page.evaluate(() => {
+      const s = document.createElement('script');
+      s.type = 'module';
+      s.textContent = "import { playAsmr } from '/js/sound.js'; (async ()=>{ try{ playAsmr('space_station_night',{fadeIn:true}); window.__play_call_ok_space = true;}catch(e){ window.__play_call_error_space = String(e);} })();";
+      document.documentElement.appendChild(s);
+    });
+    await page.waitForTimeout(1300);
+
+    const result = await page.evaluate(() => {
+      return {
+        created: !!window.__sleepy_audio_ctx_created,
+        resumed: !!window.__sleepy_audio_ctx_resumed,
+        state: (window.__sleepy_audio_ctx && window.__sleepy_audio_ctx.state) || null,
+        play_ok_soft: !!window.__play_call_ok_soft,
+        play_err_soft: window.__play_call_error_soft || null,
+        play_ok_bell: !!window.__play_call_ok_bell,
+        play_err_bell: window.__play_call_error_bell || null,
+        play_ok_laundry: !!window.__play_call_ok_laundry,
+        play_err_laundry: window.__play_call_error_laundry || null,
+        play_ok_space: !!window.__play_call_ok_space,
+        play_err_space: window.__play_call_error_space || null
+      };
+    });
+
+    console.log(JSON.stringify({ ok:true, chromePath: chromePath, result }));
+    await browser.close();
+    process.exit(0);
+  } catch (err) {
+    console.error(JSON.stringify({ ok:false, error: String(err) }));
+    process.exit(1);
+  }
+})();

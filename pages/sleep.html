@@ -1,0 +1,518 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title data-i18n="page.title">수면·꿈일기 | Shee8lramy</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    .diary-card {
+      padding: var(--space-3) var(--space-4);
+      border-radius: var(--radius-md);
+      border: 1px solid var(--glass-border);
+      background: rgba(255,255,255,0.04);
+      cursor: pointer;
+      transition: background 0.2s, border-color 0.2s;
+    }
+    .diary-card:active { background: rgba(167,139,250,0.1); border-color: rgba(167,139,250,0.35); }
+    .diary-card-head {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: var(--space-2);
+      gap: var(--space-2);
+    }
+    .diary-date { font-size: var(--font-size-xs); font-weight: 800; color: var(--text-secondary); }
+    .diary-meta { font-size: var(--font-size-2xs); color: var(--text-muted); }
+    .diary-snippet {
+      font-size: var(--font-size-xs);
+      color: var(--text-primary);
+      line-height: 1.55;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .diary-reply {
+      margin-top: var(--space-2);
+      font-size: var(--font-size-2xs);
+      color: var(--color-purple-soft);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    .diary-empty {
+      text-align: center;
+      padding: var(--space-6) var(--space-4);
+      color: var(--text-muted);
+      font-size: var(--font-size-sm);
+      line-height: 1.6;
+    }
+    .worry-thread { display: flex; flex-direction: column; gap: var(--space-2); }
+    .worry-bubble {
+      padding: var(--space-3);
+      border-radius: var(--radius-md);
+      font-size: var(--font-size-sm);
+      line-height: 1.55;
+      white-space: pre-wrap;
+    }
+    .worry-bubble.user {
+      background: rgba(167,139,250,0.15);
+      border: 1px solid rgba(167,139,250,0.25);
+      align-self: flex-end;
+      max-width: 92%;
+    }
+    .worry-bubble.model {
+      background: rgba(255,255,255,0.06);
+      border: 1px solid var(--glass-border);
+      align-self: flex-start;
+      max-width: 92%;
+    }
+    .worry-bubble-label {
+      font-size: var(--font-size-2xs);
+      font-weight: 800;
+      color: var(--text-muted);
+      margin-bottom: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div class="background">
+    <canvas id="star-canvas"></canvas>
+    <div class="moon"></div>
+  </div>
+
+  <main class="phone">
+    <header class="header">
+      <div class="header-left">
+        <div>
+          <h1 data-i18n="page.heading">😴 수면·꿈일기</h1>
+          <p class="subtitle" data-i18n="page.subtitle">기록과 감정, 쉽라미와의 대화</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="chip-box" id="wool-display">
+          <span class="icon">🧶</span>
+          <span id="wool-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+      <a href="calendar.html" class="sleep-calendar-link" data-i18n-aria-label="sleep.calendar.linkAria">
+        <span class="sleep-calendar-link__icon" aria-hidden="true">📅</span>
+        <span class="sleep-calendar-link__body">
+          <span class="sleep-calendar-link__title" data-i18n="sleep.calendar.linkTitle">메에메에 캘린더</span>
+          <span class="sleep-calendar-link__desc" data-i18n="sleep.calendar.linkDesc">수면·고민 기록을 한눈에</span>
+        </span>
+        <span class="sleep-calendar-link__arrow" aria-hidden="true">›</span>
+      </a>
+
+      <section class="glass card sleep-asmr-mini" style="padding: var(--space-4); margin-bottom: var(--space-3);">
+        <div class="flex justify-between items-center" style="margin-bottom: var(--space-2);">
+          <h3 class="font-bold" style="font-size: var(--font-size-sm); color: var(--text-secondary);" data-i18n="sleep.asmr.title">🎵 수면 사운드</h3>
+          <a href="asmr.html" class="home-link" style="font-size: var(--font-size-2xs);" data-i18n="home.asmr.viewAll">전체 ›</a>
+        </div>
+        <div class="sleep-asmr-now" id="sleep-asmr-now-wrap">
+          <span id="sleep-asmr-now" data-i18n="sleep.asmr.status">소리를 골라 잠들 준비를 해요</span>
+          <button type="button" class="home-asmr-stop" id="btn-sleep-asmr-stop" style="display:none;" data-i18n-title="home.asmr.stopButtonTitle" title="ASMR 정지">⏹</button>
+        </div>
+        <p class="home-asmr-subtitle" style="margin-top: var(--space-2);" data-i18n="sleep.asmr.recommendedMix">✨ 추천 믹스</p>
+        <div class="home-asmr-scroll" id="sleep-asmr-presets"></div>
+      </section>
+
+      <section class="glass card" style="padding: var(--space-4); margin-bottom: var(--space-3);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-3);" data-i18n="sleep.today.title">오늘의 수면</h3>
+        <h2 style="font-size: var(--font-size-2xl); margin: 0 0 var(--space-1);" id="today-sleep-duration" data-i18n="sleep.today.noRecords">기록 없음</h2>
+        <p class="text-muted" id="today-sleep-comment" style="font-size: var(--font-size-xs); margin-bottom: var(--space-3);" data-i18n="sleep.today.noRecordsDesc">아래에서 직접 입력하거나 홈에서 잠자기를 시작하세요.</p>
+        <div class="flex justify-between text-small" style="font-size: var(--font-size-xs);">
+          <span class="text-muted">💤 <span id="today-bedtime">-</span></span>
+          <span class="text-muted">☀️ <span id="today-waketime">-</span></span>
+        </div>
+        <div class="flex justify-between text-small" style="font-size: var(--font-size-xs); margin-top: var(--space-2);">
+          <span class="text-muted"><span data-i18n="sleep.today.snoringLabel">🫁 코골이</span> <span id="today-snoring">-</span></span>
+          <span class="text-muted"><span data-i18n="sleep.today.snoringStatsLabel">📈 최근 기록</span> <span id="today-snoring-stats">-</span></span>
+        </div>
+      </section>
+
+      <section class="glass card" style="padding: var(--space-4); margin-bottom: var(--space-3);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); color: var(--text-secondary); margin-bottom: var(--space-3);" data-i18n="sleep.record.title">✍️ 수면 기록</h3>
+        <p class="text-muted" id="alarm-hint" style="font-size: var(--font-size-2xs); margin-bottom: var(--space-3); line-height: 1.5;"></p>
+        <div class="time-input-group" style="margin-bottom: var(--space-3);">
+          <div class="time-input-card">
+            <span class="time-input-label" data-i18n="sleep.record.bedtimeLabel">💤 취침</span>
+            <input type="time" id="input-bedtime" class="time-input" value="23:00">
+          </div>
+          <div class="time-input-card">
+            <span class="time-input-label" data-i18n="sleep.record.waketimeLabel">☀️ 기상</span>
+            <input type="time" id="input-waketime" class="time-input" value="07:00">
+          </div>
+        </div>
+        <div style="margin-bottom: var(--space-3);">
+          <span class="time-input-label" style="display:block; margin-bottom: 8px;" data-i18n="sleep.record.moodLabel">🥰 기분</span>
+          <div class="mood-row" id="manual-mood-row">
+            <button type="button" class="mood-btn" data-mood="1">😢</button>
+            <button type="button" class="mood-btn" data-mood="2">🥱</button>
+            <button type="button" class="mood-btn selected" data-mood="3">😐</button>
+            <button type="button" class="mood-btn" data-mood="4">😊</button>
+            <button type="button" class="mood-btn" data-mood="5">🥰</button>
+          </div>
+        </div>
+        <label class="switch-label" style="padding:0; margin-bottom: var(--space-3);">
+          <span class="switch-text" data-i18n="sleep.record.snoringLabel">🫁 코골이 있었어요</span>
+          <span class="switch">
+            <input type="checkbox" id="input-snoring" data-i18n-aria-label="sleep.record.snoringLabel" aria-label="코골이 있었어요">
+            <span class="switch-slider"></span>
+          </span>
+        </label>
+        <button class="btn btn-primary w-full" id="btn-save-manual-sleep" data-i18n="sleep.record.saveButton">수면 기록 저장</button>
+      </section>
+
+      <div class="modal" id="snoring-consent-modal" style="max-width: 92%; width: 360px;">
+        <div class="modal-handle"></div>
+        <h3 class="font-bold text-center" style="font-size: var(--font-size-lg); margin-bottom: var(--space-4);" data-i18n="sleep.snoringConsentModal.title">코골이 측정 안내</h3>
+        <div class="text-muted" style="font-size: var(--font-size-sm); line-height:1.7; margin-bottom: var(--space-4);" data-i18n-html="sleep.snoringConsentModal.description">
+          코골이 측정 기능은 수면 중 사용자의 코골이를 분석하기 위해
+          기기의 마이크 사용 권한을 필요로 합니다.<br><br>
+
+          녹음된 데이터는 오직 사용자의 수면 데이터를 측정하기 위한 목적으로만 사용되며,
+          사용자의 동의 없이 외부로 전송/저장하지 않습니다.<br><br>
+
+          또, 사용자는 언제든 자신의 민감한 정보를 삭제/관리할 수 있습니다.
+        </div>
+        <div class="flex gap-2">
+          <button class="btn btn-secondary w-full" id="btn-snoring-consent-cancel" data-i18n="sleep.snoringConsentModal.cancelButton">취소</button>
+          <button class="btn btn-primary w-full" id="btn-snoring-consent-accept" data-i18n="sleep.snoringConsentModal.acceptButton">동의하고 계속</button>
+        </div>
+      </div>
+      
+
+      <section class="glass card" style="padding: var(--space-4); margin-bottom: var(--space-3);">
+        <div class="tab-bar" style="margin-bottom: var(--space-3);">
+          <div class="tab-item active" id="tab-weekly" data-i18n="sleep.stats.weeklyTab">주간</div>
+          <div class="tab-item" id="tab-monthly" data-i18n="sleep.stats.monthlyTab">월간</div>
+        </div>
+        <div class="stat-row" style="margin-bottom: var(--space-3);">
+          <div class="stat-chip">
+            <span class="chip-icon">🕒</span>
+            <span class="chip-value" id="stat-weekly-avg">0분</span>
+            <span class="chip-label" data-i18n="sleep.stats.avgSleep">평균 수면</span>
+          </div>
+          <div class="stat-chip">
+            <span class="chip-icon">🎯</span>
+            <span class="chip-value" id="stat-goal-attain">0 / 7회</span>
+            <span class="chip-label" data-i18n="sleep.stats.goalAchieved">목표 달성</span>
+          </div>
+          <div class="stat-chip">
+            <span class="chip-icon">🫁</span>
+            <span class="chip-value" id="stat-snoring-days">0 / 7일</span>
+            <span class="chip-label" data-i18n="sleep.stats.snoringRecords">코골이 기록</span>
+          </div>
+        </div>
+        <div class="chart-area">
+          <canvas id="sleep-chart"></canvas>
+        </div>
+      </section>
+
+      <section class="glass card" style="padding: var(--space-4);">
+        <div class="flex justify-between items-center" style="margin-bottom: var(--space-3);">
+          <h3 class="font-bold" style="font-size: var(--font-size-sm); color: var(--text-secondary);" data-i18n="sleep.diary.title">🌙 꿈일기</h3>
+          <a href="worry.html" class="home-link" style="font-size: var(--font-size-2xs);" data-i18n="sleep.diary.writeLink">오늘 쓰기 ›</a>
+        </div>
+        <p class="text-muted" style="font-size: var(--font-size-2xs); margin-bottom: var(--space-3); line-height: 1.5;" data-i18n="sleep.diary.desc">
+          지난 날의 기분·수면과 쉽라미와 나눈 짧은 대화를 모아 봐요.
+        </p>
+        <div id="diary-list" class="flex flex-col gap-2"></div>
+      </section>
+    </div>
+
+    <nav class="bottom-nav">
+      <div class="nav-item" data-href="../index.html">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label" data-i18n="nav.home">홈</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item active" data-href="sleep.html">
+        <span class="nav-icon">🌙</span>
+        <span class="nav-label" data-i18n="nav.sleep">수면</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="workshop.html">
+        <span class="nav-icon">🧶</span>
+        <span class="nav-label" data-i18n="nav.workshop">공방</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="friends.html">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label" data-i18n="nav.friends">친구</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="gallery.html">
+        <span class="nav-icon">🖼️</span>
+        <span class="nav-label" data-i18n="nav.gallery">갤러리</span>
+        <span class="nav-dot"></span>
+      </div>
+    </nav>
+  </main>
+
+  <div class="overlay" id="diary-overlay"></div>
+  <div class="modal modal-scroll" id="diary-detail-modal">
+    <div class="modal-handle"></div>
+    <h3 class="font-bold" id="diary-detail-title" style="font-size: var(--font-size-md); margin-bottom: var(--space-3);"></h3>
+    <div id="diary-detail-sleep" style="margin-bottom: var(--space-4); font-size: var(--font-size-sm);"></div>
+    <div id="diary-detail-thread" class="worry-thread" style="margin-bottom: var(--space-4);"></div>
+    <button type="button" class="btn btn-secondary w-full" id="btn-close-diary-detail" data-i18n="sleep.diary.closeButton">닫기</button>
+  </div>
+
+  <script type="module">
+    import { initCommon, showToast } from '../js/app.js';
+    import { getSheep, getSettings } from '../js/storage.js';
+    import { t } from '../js/i18n.js';
+    import {
+      recordSleep, formatDuration, formatClockTime, getTodaySleep, getWeeklyAvg,
+      getMonthlySuccess, getRecentRecords, drawSleepChart, getSnoringStats,
+    } from '../js/sleep.js';
+    import { saveMorningCallSchedule, getSleepTimeDefaults, formatAlarmHint } from '../js/morningcall.js';
+    import { getDreamDiaryEntries, formatDiarySummary } from '../js/dream-diary.js';
+    import { moodEmoji } from '../js/calendar.js';
+    import { initSound } from '../js/sound.js';
+    import { initSleepAsmrMini } from '../js/asmr.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCommon();
+      initSound();
+      initSleepAsmrMini();
+
+      const woolCount = document.getElementById('wool-count');
+      const diaryList = document.getElementById('diary-list');
+      const diaryOverlay = document.getElementById('diary-overlay');
+      const diaryModal = document.getElementById('diary-detail-modal');
+      let sleepChartTab = 'weekly';
+      let manualMood = 3;
+
+      function escapeHtml(s) {
+        return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      }
+
+      function refreshToday() {
+        woolCount.textContent = getSheep().wool;
+        const today = getTodaySleep();
+        const settings = getSettings();
+        const durEl = document.getElementById('today-sleep-duration');
+        const commentEl = document.getElementById('today-sleep-comment');
+        const snoringEl = document.getElementById('today-snoring');
+        const snoringStatsEl = document.getElementById('today-snoring-stats');
+        const snoringSummary = getSnoringStats(7);
+        snoringStatsEl.textContent = t('sleep.today.snoringStatsValue', { count: snoringSummary.count, total: snoringSummary.total });
+        if (today) {
+          const lang = getSettings().language || 'en';
+          durEl.textContent = formatDuration(today.duration);
+          commentEl.textContent = today.duration >= settings.sleepGoal
+            ? t('sleep.today.goalMet')
+            : t('sleep.today.goalMiss');
+          document.getElementById('today-bedtime').textContent = formatClockTime(today.bedtime, lang);
+          document.getElementById('today-waketime').textContent = formatClockTime(today.wakeTime, lang);
+          snoringEl.textContent = today.snoring ? t('sleep.today.snoringYes') : t('sleep.today.snoringNo');
+        } else {
+          durEl.textContent = t('sleep.today.noRecords');
+          commentEl.textContent = t('sleep.today.noRecordsDesc');
+          document.getElementById('today-bedtime').textContent = '-';
+          document.getElementById('today-waketime').textContent = '-';
+          snoringEl.textContent = '-';
+        }
+        refreshChart();
+        renderDiary();
+      }
+
+      function refreshChart() {
+        const settings = getSettings();
+        document.getElementById('stat-weekly-avg').textContent = formatDuration(getWeeklyAvg());
+        const canvas = document.getElementById('sleep-chart');
+        const snoringSummary = getSnoringStats(sleepChartTab === 'weekly' ? 7 : 30);
+        document.getElementById('stat-snoring-days').textContent = t('sleep.stats.snoringStatsValue', { count: snoringSummary.count, total: snoringSummary.total });
+        if (sleepChartTab === 'weekly') {
+          const weekly = getRecentRecords(7);
+          const success = weekly.filter(r => r.duration >= (settings.sleepGoal || 480)).length;
+          document.getElementById('stat-goal-attain').textContent = t('sleep.chart.goalAttain', { success, total: 7 });
+          drawSleepChart(canvas, 'weekly');
+        } else {
+          const m = getMonthlySuccess();
+          document.getElementById('stat-goal-attain').textContent = t('sleep.chart.goalAttain', { success: m.success, total: m.total });
+          drawSleepChart(canvas, 'monthly');
+        }
+      }
+
+      function renderDiary() {
+        const entries = getDreamDiaryEntries(30);
+        if (!entries.length) {
+          diaryList.innerHTML = `<div class="diary-empty">${t('sleep.diary.empty')}<br><a href="worry.html" style="color:var(--color-purple-soft);">${t('sleep.diary.emptyLink')}</a>${t('sleep.diary.emptySuffix')}</div>`;
+          return;
+        }
+        diaryList.innerHTML = '';
+        entries.forEach(entry => {
+          const card = document.createElement('div');
+          card.className = 'diary-card';
+          const snippet = entry.worryPreview
+            ? escapeHtml(entry.worryPreview)
+            : entry.sleepNote
+              ? escapeHtml(entry.sleepNote)
+              : `<span class="text-muted">${t('sleep.diary.fallback')}</span>`;
+          card.innerHTML = `
+            <div class="diary-card-head">
+              <span class="diary-date">${entry.dateLabel}</span>
+              <span class="diary-meta">${formatDiarySummary(entry)}</span>
+            </div>
+            <div class="diary-snippet">${snippet}</div>
+            ${entry.replyPreview ? `<div class="diary-reply">🐑 ${escapeHtml(entry.replyPreview)}</div>` : ''}
+          `;
+          card.addEventListener('click', () => openDiaryDetail(entry));
+          diaryList.appendChild(card);
+        });
+      }
+
+      function openDiaryDetail(entry) {
+        document.getElementById('diary-detail-title').textContent = entry.dateLabel;
+        const sleepEl = document.getElementById('diary-detail-sleep');
+        if (entry.hasSleep) {
+          sleepEl.innerHTML = `
+            <div class="text-muted" style="font-size:var(--font-size-xs);margin-bottom:4px;">${t('sleep.diary.detailSleepTitle')}</div>
+            <div><strong>${formatDuration(entry.sleepDuration)}</strong> · ${entry.moodEmoji || moodEmoji(entry.mood)}
+            ${entry.bedtime ? ` · ${formatClockTime(entry.bedtime, getSettings().language || 'en')} → ${formatClockTime(entry.wakeTime, getSettings().language || 'en')}` : ''}</div>
+            ${entry.snoring ? `<div style="margin-top:8px;font-size:var(--font-size-xs);color:var(--color-purple-soft);">🫁 ${t('sleep.diary.snoringMessage')}</div>` : ''}
+            ${entry.sleepNote ? `<p style="margin-top:8px;font-size:var(--font-size-xs);line-height:1.5;">${escapeHtml(entry.sleepNote)}</p>` : ''}
+          `;
+        } else {
+          sleepEl.innerHTML = `<p class="text-muted" style="font-size:var(--font-size-xs);">${t('sleep.diary.noSleep')}</p>`;
+        }
+        const threadEl = document.getElementById('diary-detail-thread');
+        threadEl.innerHTML = '';
+        if (entry.thread?.length) {
+          entry.thread.forEach(turn => {
+            const div = document.createElement('div');
+            div.className = `worry-bubble ${turn.role}`;
+            div.innerHTML = `
+              <div class="worry-bubble-label">${turn.role === 'user' ? t('calendar.worry.user') : t('calendar.worry.model')}</div>
+              ${escapeHtml(turn.content)}
+            `;
+            threadEl.appendChild(div);
+          });
+        } else if (!entry.hasSleep) {
+          threadEl.innerHTML = `<p class="text-muted text-center" style="font-size:var(--font-size-xs);">${t('sleep.diary.noThread')}</p>`;
+        }
+        diaryOverlay.classList.add('active');
+        diaryModal.classList.add('active');
+      }
+
+      function closeDiaryDetail() {
+        diaryOverlay.classList.remove('active');
+        diaryModal.classList.remove('active');
+      }
+
+      const { bedtime, wakeTime } = getSleepTimeDefaults();
+      const bedInput = document.getElementById('input-bedtime');
+      const wakeInput = document.getElementById('input-waketime');
+      const snoringInput = document.getElementById('input-snoring');
+      const snoringConsentModal = document.getElementById('snoring-consent-modal');
+      const snoringConsentCancel = document.getElementById('btn-snoring-consent-cancel');
+      const snoringConsentAccept = document.getElementById('btn-snoring-consent-accept');
+      let snoringConsentPending = false;
+
+      function showSnoringConsent() {
+        snoringConsentModal.classList.add('active');
+        snoringConsentPending = true;
+      }
+
+      function hideSnoringConsent() {
+        snoringConsentModal.classList.remove('active');
+        snoringConsentPending = false;
+      }
+
+      snoringInput.addEventListener('change', () => {
+        if (snoringInput.checked) {
+          showSnoringConsent();
+        }
+      });
+
+      snoringConsentCancel.addEventListener('click', () => {
+        if (!snoringConsentPending) return;
+        snoringInput.checked = false;
+        hideSnoringConsent();
+      });
+
+      snoringConsentAccept.addEventListener('click', () => {
+        if (!snoringConsentPending) return;
+        hideSnoringConsent();
+      });
+
+      bedInput.value = bedtime;
+      wakeInput.value = wakeTime;
+      const alarmHint = document.getElementById('alarm-hint');
+      function syncAlarm() {
+        saveMorningCallSchedule(bedInput.value, wakeInput.value);
+        alarmHint.textContent = formatAlarmHint(bedInput.value, wakeInput.value);
+      }
+      syncAlarm();
+      bedInput.addEventListener('change', syncAlarm);
+      wakeInput.addEventListener('change', syncAlarm);
+
+      document.querySelectorAll('#manual-mood-row .mood-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+          document.querySelectorAll('#manual-mood-row .mood-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          manualMood = parseInt(btn.dataset.mood, 10);
+        });
+      });
+
+      const existingToday = getTodaySleep();
+      if (existingToday) {
+        snoringInput.checked = Boolean(existingToday.snoring);
+        manualMood = existingToday.mood ?? 3;
+        document.querySelectorAll('#manual-mood-row .mood-btn').forEach(btn => {
+          btn.classList.toggle('selected', parseInt(btn.dataset.mood, 10) === manualMood);
+        });
+      }
+
+      document.getElementById('btn-save-manual-sleep').addEventListener('click', () => {
+        const res = recordSleep({
+          bedtime: bedInput.value,
+          wakeTime: wakeInput.value,
+          mood: manualMood,
+          note: '',
+          snoring: snoringInput.checked,
+        });
+        syncAlarm();
+        let msg = t('sleep.toast.saved', { xpGained: res.xpGained });
+        if (res.regularityBonus > 0) msg += ` · ${t('sleep.toast.regularityBonus', { bonus: res.regularityBonus })}`;
+        showToast(msg, 'success');
+        refreshToday();
+      });
+
+      document.getElementById('tab-weekly').addEventListener('click', () => {
+        sleepChartTab = 'weekly';
+        document.getElementById('tab-weekly').classList.add('active');
+        document.getElementById('tab-monthly').classList.remove('active');
+        refreshChart();
+      });
+      document.getElementById('tab-monthly').addEventListener('click', () => {
+        sleepChartTab = 'monthly';
+        document.getElementById('tab-monthly').classList.add('active');
+        document.getElementById('tab-weekly').classList.remove('active');
+        refreshChart();
+      });
+
+      diaryOverlay.addEventListener('click', closeDiaryDetail);
+      document.getElementById('btn-close-diary-detail').addEventListener('click', closeDiaryDetail);
+
+      refreshToday();
+      setTimeout(() => refreshChart(), 200);
+    });
+  </script>
+</body>
+</html>

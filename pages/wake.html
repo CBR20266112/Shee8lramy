@@ -1,0 +1,749 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>기상 알람 미션 | Shee8lramy 쉽알라미</title>
+  <link rel="stylesheet" href="../css/variables.css">
+  <link rel="stylesheet" href="../css/style.css">
+  <link rel="stylesheet" href="../css/layout.css">
+  <link rel="stylesheet" href="../css/components.css">
+  <link rel="stylesheet" href="../css/animations.css">
+  <link rel="stylesheet" href="../css/responsive.css">
+  <style>
+    /* ── 알람 전용 스타일 ── */
+    .alarm-hero {
+      background: linear-gradient(135deg, rgba(220,38,38,0.15), rgba(167,139,250,0.2));
+      border: 1px solid rgba(220,38,38,0.25);
+      border-radius: var(--radius-lg);
+      padding: var(--space-5);
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .alarm-hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 50% 0%, rgba(220,38,38,0.1) 0%, transparent 70%);
+    }
+    .alarm-time-display {
+      font-size: 3.5rem;
+      font-weight: 900;
+      color: var(--text-primary);
+      letter-spacing: -2px;
+      line-height: 1;
+      margin-bottom: var(--space-2);
+      text-shadow: 0 0 30px rgba(220,38,38,0.4);
+    }
+    .alarm-time-display.next-day {
+      color: var(--color-warning);
+    }
+
+    /* 알람 카드 */
+    .alarm-card {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--glass-bg);
+      border: 1px solid var(--glass-border);
+      border-radius: var(--radius-md);
+      transition: all var(--transition-base);
+    }
+    .alarm-card:hover { background: var(--glass-bg-light); }
+    .alarm-card.inactive { opacity: 0.5; }
+    .alarm-card-time {
+      font-size: var(--font-size-xl);
+      font-weight: 800;
+      color: var(--text-primary);
+      min-width: 80px;
+    }
+    .alarm-card-meta {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 2px;
+    }
+    .alarm-card-label {
+      font-size: var(--font-size-xs);
+      color: var(--text-muted);
+    }
+    .alarm-card-badges {
+      display: flex;
+      gap: var(--space-1);
+      flex-wrap: wrap;
+    }
+    .alarm-badge {
+      font-size: 0.6rem;
+      padding: 2px 6px;
+      border-radius: var(--radius-full);
+      font-weight: 700;
+    }
+    .alarm-badge.sound { background: rgba(167,139,250,0.2); color: var(--color-purple); border: 1px solid rgba(167,139,250,0.3); }
+    .alarm-badge.mission { background: rgba(251,191,36,0.15); color: var(--color-warning); border: 1px solid rgba(251,191,36,0.25); }
+
+    /* 사운드 선택기 */
+    .sound-preset-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: var(--space-2);
+    }
+    .sound-preset-btn {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: var(--space-1);
+      padding: var(--space-3);
+      background: var(--glass-bg);
+      border: 2px solid transparent;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+      color: var(--text-primary);
+      font-family: var(--font-main);
+      text-align: center;
+    }
+    .sound-preset-btn:hover { background: var(--glass-bg-light); border-color: rgba(167,139,250,0.3); }
+    .sound-preset-btn.selected {
+      background: rgba(167,139,250,0.15);
+      border-color: var(--color-purple);
+      box-shadow: 0 0 16px rgba(167,139,250,0.2);
+    }
+    .sound-preset-icon { font-size: 1.8rem; }
+    .sound-preset-name { font-size: 0.65rem; font-weight: 700; line-height: 1.3; }
+    .sound-test-btn {
+      font-size: 0.6rem;
+      padding: 2px 8px;
+      border-radius: var(--radius-full);
+      background: rgba(255,255,255,0.1);
+      border: 1px solid var(--glass-border);
+      color: var(--text-muted);
+      cursor: pointer;
+      margin-top: 2px;
+    }
+
+    /* 미션 선택기 */
+    .mission-option {
+      display: flex;
+      align-items: center;
+      gap: var(--space-3);
+      padding: var(--space-3) var(--space-4);
+      background: var(--glass-bg);
+      border: 2px solid transparent;
+      border-radius: var(--radius-md);
+      cursor: pointer;
+      transition: all var(--transition-base);
+    }
+    .mission-option:hover { background: var(--glass-bg-light); }
+    .mission-option.selected {
+      background: rgba(167,139,250,0.12);
+      border-color: var(--color-purple);
+    }
+    .mission-option-icon { font-size: 1.6rem; flex-shrink: 0; }
+    .mission-option-text { flex: 1; }
+    .mission-option-title { font-size: var(--font-size-sm); font-weight: 700; color: var(--text-primary); }
+    .mission-option-desc { font-size: var(--font-size-2xs); color: var(--text-muted); margin-top: 2px; }
+    .mission-option-radio {
+      width: 18px; height: 18px;
+      border-radius: 50%;
+      border: 2px solid var(--glass-border);
+      flex-shrink: 0;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--transition-base);
+    }
+    .mission-option.selected .mission-option-radio {
+      border-color: var(--color-purple);
+      background: var(--color-purple);
+    }
+    .mission-option.selected .mission-option-radio::after {
+      content: '';
+      width: 6px; height: 6px;
+      border-radius: 50%;
+      background: white;
+    }
+
+    /* 알람 모달 (울릴 때) */
+    .alarm-ring-modal {
+      position: fixed; inset: 0;
+      z-index: 99998;
+      background: rgba(10, 0, 0, 0.9);
+      display: flex; align-items: center; justify-content: center;
+      display: none;
+    }
+    .alarm-ring-modal.active { display: flex; }
+    .alarm-ring-content {
+      background: linear-gradient(135deg, #1a0000, #2d1b4e);
+      border: 2px solid rgba(220,38,38,0.5);
+      border-radius: var(--radius-xl);
+      padding: var(--space-6);
+      width: 90%; max-width: 380px;
+      text-align: center;
+      box-shadow: 0 0 60px rgba(220,38,38,0.4);
+      animation: alarmPulse 0.5s ease infinite alternate;
+    }
+    @keyframes alarmPulse {
+      from { box-shadow: 0 0 40px rgba(220,38,38,0.3); }
+      to   { box-shadow: 0 0 80px rgba(220,38,38,0.6); }
+    }
+    .alarm-ring-time { font-size: 3rem; font-weight: 900; color: #fff; margin-bottom: var(--space-2); }
+    .alarm-ring-label { font-size: var(--font-size-sm); color: rgba(255,200,200,0.8); margin-bottom: var(--space-4); }
+
+    /* 미션 패널 내부 */
+    .mission-panel {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      border-radius: var(--radius-md);
+      padding: var(--space-4);
+      margin-bottom: var(--space-4);
+    }
+    .mission-question {
+      font-size: var(--font-size-xl);
+      font-weight: 900;
+      color: var(--color-warning);
+      margin-bottom: var(--space-3);
+    }
+    .mission-input {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: var(--radius-sm);
+      padding: var(--space-3);
+      color: #fff;
+      font-size: var(--font-size-lg);
+      font-family: var(--font-main);
+      font-weight: 700;
+      text-align: center;
+      box-sizing: border-box;
+    }
+    .mission-input:focus { outline: none; border-color: var(--color-purple); }
+    .mission-sentence {
+      font-size: var(--font-size-sm);
+      color: var(--color-warning);
+      margin-bottom: var(--space-3);
+      line-height: 1.5;
+      word-break: keep-all;
+    }
+    .mission-typing-input {
+      width: 100%;
+      background: rgba(255,255,255,0.08);
+      border: 2px solid rgba(255,255,255,0.15);
+      border-radius: var(--radius-sm);
+      padding: var(--space-3);
+      color: #fff;
+      font-size: var(--font-size-sm);
+      font-family: var(--font-main);
+      box-sizing: border-box;
+      resize: none;
+      height: 80px;
+    }
+    .tap-count { font-size: 3rem; font-weight: 900; color: #fff; }
+    .tap-button {
+      width: 120px; height: 120px;
+      border-radius: 50%;
+      background: linear-gradient(135deg, var(--color-purple), var(--color-indigo));
+      border: 4px solid rgba(255,255,255,0.3);
+      font-size: 2.5rem;
+      color: #fff;
+      cursor: pointer;
+      transition: transform var(--transition-bounce);
+      box-shadow: 0 8px 32px rgba(167,139,250,0.4);
+      display: flex; align-items: center; justify-content: center;
+      margin: var(--space-3) auto;
+    }
+    .tap-button:active { transform: scale(0.9); }
+
+    /* 타이머 바 */
+    .mission-timer-bar {
+      height: 4px;
+      background: rgba(255,255,255,0.1);
+      border-radius: var(--radius-full);
+      overflow: hidden;
+      margin-bottom: var(--space-3);
+    }
+    .mission-timer-fill {
+      height: 100%;
+      background: var(--color-danger);
+      border-radius: var(--radius-full);
+      transition: width 1s linear;
+    }
+
+    /* 성공 오버레이 */
+    .success-overlay {
+      position: fixed; inset: 0;
+      z-index: 99999;
+      background: linear-gradient(135deg, rgba(0,200,100,0.9), rgba(167,139,250,0.9));
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      display: none;
+    }
+    .success-overlay.active { display: flex; }
+    .success-sheep { width: 160px; animation: sheepBounce 0.6s ease infinite alternate; }
+    @keyframes sheepBounce {
+      from { transform: translateY(0) scale(1); }
+      to   { transform: translateY(-12px) scale(1.05); }
+    }
+    .success-text { font-size: var(--font-size-2xl); font-weight: 900; color: #fff; margin-top: var(--space-4); }
+    .success-sub { font-size: var(--font-size-sm); color: rgba(255,255,255,0.8); margin-top: var(--space-2); }
+  </style>
+</head>
+<body>
+  <div class="background">
+    <canvas id="star-canvas"></canvas>
+    <div class="moon"></div>
+  </div>
+
+  <main class="phone">
+    <header class="header">
+      <div class="header-left">
+        <button class="btn-back" onclick="location.href='../index.html'" title="홈으로">←</button>
+        <div>
+          <h1>⏰ 기상 알람 미션</h1>
+          <p class="subtitle">못 일어나면 F학점 확정이야</p>
+        </div>
+      </div>
+      <div class="header-right">
+        <div class="chip-box" id="wool-display">
+          <span class="icon">🧶</span>
+          <span id="wool-count">0</span>
+        </div>
+      </div>
+    </header>
+
+    <div class="content">
+
+      <!-- 다음 알람 디스플레이 -->
+      <section class="alarm-hero">
+        <div style="font-size: var(--font-size-xs); color: rgba(255,200,200,0.7); margin-bottom: var(--space-1);">다음 알람까지</div>
+        <div class="alarm-time-display" id="next-alarm-countdown">알람 없음</div>
+        <div style="font-size: var(--font-size-xs); color: rgba(255,255,255,0.5);" id="next-alarm-label">알람을 설정하세요</div>
+      </section>
+
+      <!-- 알람 추가 -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <div class="section-header" style="margin-bottom: var(--space-3);">
+          <span class="section-title">➕ 새 알람 설정</span>
+        </div>
+        <div style="text-align: center; margin-bottom: var(--space-4);">
+          <input type="time" id="alarm-time-input" value="07:00"
+            style="font-size: 2.5rem; font-weight: 900; background: transparent; border: none; color: var(--text-primary); font-family: var(--font-main); text-align: center; width: 100%; cursor: pointer;">
+        </div>
+
+        <!-- 사운드 선택 -->
+        <div style="margin-bottom: var(--space-3);">
+          <div style="font-size: var(--font-size-xs); font-weight: 700; color: var(--text-secondary); margin-bottom: var(--space-2);">🔊 알람 사운드 선택</div>
+          <div class="sound-preset-grid">
+            <button class="sound-preset-btn selected" id="sound-siren" data-sound="siren">
+              <span class="sound-preset-icon">🚨</span>
+              <span class="sound-preset-name">비상 공습<br>사이렌</span>
+              <span class="sound-test-btn" data-test="siren">▶ 미리듣기</span>
+            </button>
+            <button class="sound-preset-btn" id="sound-chalk" data-sound="chalk">
+              <span class="sound-preset-icon">🪚</span>
+              <span class="sound-preset-name">칠판 긁는<br>소리</span>
+              <span class="sound-test-btn" data-test="chalk">▶ 미리듣기</span>
+            </button>
+            <button class="sound-preset-btn" id="sound-chicken" data-sound="chicken">
+              <span class="sound-preset-icon">🐔</span>
+              <span class="sound-preset-name">분노한<br>전자 닭</span>
+              <span class="sound-test-btn" data-test="chicken">▶ 미리듣기</span>
+            </button>
+            <button class="sound-preset-btn" id="sound-fgrade" data-sound="fgrade">
+              <span class="sound-preset-icon">💥</span>
+              <span class="sound-preset-name">1교시 F학점<br>경보음</span>
+              <span class="sound-test-btn" data-test="fgrade">▶ 미리듣기</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- 기상 미션 선택 -->
+        <div style="margin-bottom: var(--space-4);">
+          <div style="font-size: var(--font-size-xs); font-weight: 700; color: var(--text-secondary); margin-bottom: var(--space-2);">🎯 기상 해제 미션 선택</div>
+          <div style="display: flex; flex-direction: column; gap: var(--space-2);">
+            <div class="mission-option selected" data-mission="quiz">
+              <span class="mission-option-icon">🧠</span>
+              <div class="mission-option-text">
+                <div class="mission-option-title">두뇌 강제 기상</div>
+                <div class="mission-option-desc">랜덤 2자리 연산 퀴즈 풀기</div>
+              </div>
+              <div class="mission-option-radio"></div>
+            </div>
+            <div class="mission-option" data-mission="typing">
+              <span class="mission-option-icon">⌨️</span>
+              <div class="mission-option-text">
+                <div class="mission-option-title">출결 타자 미션</div>
+                <div class="mission-option-desc">B급 문장 오타 없이 따라 치기</div>
+              </div>
+              <div class="mission-option-radio"></div>
+            </div>
+            <div class="mission-option" data-mission="tap">
+              <span class="mission-option-icon">👊</span>
+              <div class="mission-option-text">
+                <div class="mission-option-title">양 연타 미션</div>
+                <div class="mission-option-desc">5초 안에 양 30회 연타</div>
+              </div>
+              <div class="mission-option-radio"></div>
+            </div>
+          </div>
+        </div>
+
+        <div style="display: flex; gap: var(--space-2);">
+          <button class="btn btn-primary" id="btn-add-alarm" style="flex: 1;">⏰ 알람 저장</button>
+          <button class="btn" id="btn-test-alarm" style="background: rgba(220,38,38,0.2); border: 1px solid rgba(220,38,38,0.4); color: var(--color-danger);">🔔 테스트</button>
+        </div>
+      </section>
+
+      <!-- 등록된 알람 목록 -->
+      <section class="glass card" style="padding: var(--space-4);">
+        <div class="section-header" style="margin-bottom: var(--space-3);">
+          <span class="section-title">📋 등록된 알람</span>
+        </div>
+        <div id="alarm-list" style="display: flex; flex-direction: column; gap: var(--space-2);">
+          <div style="text-align: center; color: var(--text-muted); font-size: var(--font-size-sm); padding: var(--space-4);">
+            아직 알람이 없어요 😴
+          </div>
+        </div>
+      </section>
+
+    </div>
+
+    <!-- 하단 네비 -->
+    <nav class="bottom-nav">
+      <div class="nav-item" data-href="../index.html">
+        <span class="nav-icon">🏠</span>
+        <span class="nav-label">홈</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item active" data-href="wake.html">
+        <span class="nav-icon">⏰</span>
+        <span class="nav-label">기상</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="calendar.html">
+        <span class="nav-icon">📅</span>
+        <span class="nav-label">캘린더</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="friends.html">
+        <span class="nav-icon">👥</span>
+        <span class="nav-label">친구</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="workshop.html">
+        <span class="nav-icon">🧶</span>
+        <span class="nav-label">공방</span>
+        <span class="nav-dot"></span>
+      </div>
+      <div class="nav-item" data-href="gallery.html">
+        <span class="nav-icon">🖼️</span>
+        <span class="nav-label">갤러리</span>
+        <span class="nav-dot"></span>
+      </div>
+    </nav>
+  </main>
+
+  <!-- 알람 울릴 때 모달 -->
+  <div class="alarm-ring-modal" id="alarm-ring-modal">
+    <div class="alarm-ring-content">
+      <div style="font-size: 3rem; margin-bottom: var(--space-2);">🚨</div>
+      <div class="alarm-ring-time" id="ring-time-display">07:00</div>
+      <div class="alarm-ring-label">기상 미션을 완료해야 알람이 꺼져요!</div>
+
+      <!-- 미션 패널 -->
+      <div class="mission-panel" id="mission-panel">
+        <!-- JS로 동적 렌더링 -->
+      </div>
+
+      <div class="mission-timer-bar">
+        <div class="mission-timer-fill" id="mission-timer-fill" style="width: 100%;"></div>
+      </div>
+
+      <button class="btn btn-primary" id="btn-mission-submit" style="width: 100%; font-size: var(--font-size-md); padding: var(--space-3);">
+        ✅ 미션 제출
+      </button>
+      <button class="btn" id="btn-mission-skip" style="width: 100%; margin-top: var(--space-2); opacity: 0.5; font-size: var(--font-size-xs);">
+        ⚠️ 미션 스킵 (출석 페널티)
+      </button>
+    </div>
+  </div>
+
+  <!-- 성공 오버레이 -->
+  <div class="success-overlay" id="success-overlay">
+    <img src="../assets/pet/poses/pose4.png" class="success-sheep" alt="쉽라미 기상 성공">
+    <div class="success-text">🎉 기상 성공!</div>
+    <div class="success-sub">오늘도 출결 방어 완료! HP 100% 회복!</div>
+    <button class="btn btn-primary" id="btn-success-close" style="margin-top: var(--space-6); padding: var(--space-3) var(--space-8);">
+      💪 하루 시작하기
+    </button>
+  </div>
+
+  <script type="module">
+    import { initCommon, showToast } from '../js/app.js';
+    import { getSheep } from '../js/storage.js';
+    import {
+      setAlarm, getAlarms, saveAlarms, deleteAlarm, toggleAlarm,
+      testAlarm, triggerAlarm, dismissAlarm, stopAlarmSound,
+      playSirenAlarm, playChalkboardAlarm, playChickenAlarm, playFGradeAlarm,
+      generateMathQuiz, getRandomTypingSentence, createTapMission,
+      isAlarmRinging
+    } from '../js/wake-alarm.js';
+
+    document.addEventListener('DOMContentLoaded', () => {
+      initCommon();
+      document.getElementById('wool-count').textContent = getSheep().wool;
+
+      // ── 상태 ──
+      let selectedSound = 'siren';
+      let selectedMission = 'quiz';
+      let currentMission = null;
+      let tapState = null;
+      let missionTimerInterval = null;
+
+      // ── 사운드 선택 ──
+      document.querySelectorAll('.sound-preset-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          // 미리듣기 버튼은 별도 처리
+          if (e.target.classList.contains('sound-test-btn')) return;
+          document.querySelectorAll('.sound-preset-btn').forEach(b => b.classList.remove('selected'));
+          btn.classList.add('selected');
+          selectedSound = btn.dataset.sound;
+        });
+      });
+
+      // 미리듣기 버튼
+      document.querySelectorAll('.sound-test-btn').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          e.stopPropagation();
+          const sound = btn.dataset.test;
+          const fns = { siren: playSirenAlarm, chalk: playChalkboardAlarm, chicken: playChickenAlarm, fgrade: playFGradeAlarm };
+          if (fns[sound]) fns[sound](3);
+          showToast('🎵 미리듣기 재생 중 (3초)', 'info', 3000);
+        });
+      });
+
+      // ── 미션 선택 ──
+      document.querySelectorAll('.mission-option').forEach(opt => {
+        opt.addEventListener('click', () => {
+          document.querySelectorAll('.mission-option').forEach(o => o.classList.remove('selected'));
+          opt.classList.add('selected');
+          selectedMission = opt.dataset.mission;
+        });
+      });
+
+      // ── 알람 저장 ──
+      document.getElementById('btn-add-alarm').addEventListener('click', () => {
+        const timeVal = document.getElementById('alarm-time-input').value;
+        if (!timeVal) { showToast('⏰ 시간을 선택하세요!', 'error'); return; }
+        setAlarm(timeVal, selectedSound, selectedMission);
+        renderAlarmList();
+        showToast(`⏰ ${timeVal} 알람 설정 완료!`, 'success');
+      });
+
+      // ── 테스트 알람 ──
+      document.getElementById('btn-test-alarm').addEventListener('click', () => {
+        triggerAlarm(selectedSound, selectedMission);
+      });
+
+      // ── 알람 목록 렌더링 ──
+      const SOUND_LABELS = { siren: '🚨 사이렌', chalk: '🪚 칠판긁기', chicken: '🐔 전자닭', fgrade: '💥 F학점경보' };
+      const MISSION_LABELS = { quiz: '🧠 수학퀴즈', typing: '⌨️ 타자미션', tap: '👊 연타미션' };
+
+      function renderAlarmList() {
+        const alarms = getAlarms();
+        const container = document.getElementById('alarm-list');
+        if (!alarms.length) {
+          container.innerHTML = `<div style="text-align:center;color:var(--text-muted);font-size:var(--font-size-sm);padding:var(--space-4);">아직 알람이 없어요 😴</div>`;
+          updateNextAlarmDisplay(null);
+          return;
+        }
+
+        const sorted = [...alarms].sort((a, b) => a.time.localeCompare(b.time));
+        const next = sorted.find(a => a.active);
+        updateNextAlarmDisplay(next);
+
+        container.innerHTML = sorted.map(alarm => `
+          <div class="alarm-card ${alarm.active ? '' : 'inactive'}" data-id="${alarm.id}">
+            <div class="alarm-card-time">${alarm.time}</div>
+            <div class="alarm-card-meta">
+              <div class="alarm-card-badges">
+                <span class="alarm-badge sound">${SOUND_LABELS[alarm.sound] || alarm.sound}</span>
+                <span class="alarm-badge mission">${MISSION_LABELS[alarm.mission] || alarm.mission}</span>
+              </div>
+            </div>
+            <label class="switch switch-sm" style="flex-shrink:0;">
+              <input type="checkbox" ${alarm.active ? 'checked' : ''} onchange="handleToggle(${alarm.id})">
+              <span class="switch-slider"></span>
+            </label>
+            <button onclick="handleDelete(${alarm.id})" style="background:none;border:none;color:var(--color-danger);font-size:1rem;cursor:pointer;padding:0 4px;">🗑️</button>
+          </div>
+        `).join('');
+      }
+
+      window.handleToggle = (id) => { toggleAlarm(id); renderAlarmList(); };
+      window.handleDelete = (id) => { deleteAlarm(id); renderAlarmList(); showToast('알람 삭제됨', 'default'); };
+
+      function updateNextAlarmDisplay(alarm) {
+        const countdown = document.getElementById('next-alarm-countdown');
+        const label = document.getElementById('next-alarm-label');
+        if (!alarm) {
+          countdown.textContent = '알람 없음';
+          label.textContent = '알람을 설정하세요';
+          return;
+        }
+        countdown.textContent = alarm.time;
+        const [h, m] = alarm.time.split(':').map(Number);
+        const now = new Date();
+        const target = new Date(now);
+        target.setHours(h, m, 0, 0);
+        if (target <= now) target.setDate(target.getDate() + 1);
+        const diffMs = target - now;
+        const diffH = Math.floor(diffMs / 3600000);
+        const diffM = Math.floor((diffMs % 3600000) / 60000);
+        label.textContent = `⏱ ${diffH}시간 ${diffM}분 후`;
+      }
+
+      // ── 알람 울릴 때 처리 ──
+      window.addEventListener('alarm-triggered', (e) => {
+        showAlarmModal(e.detail.missionType || selectedMission);
+      });
+
+      function showAlarmModal(missionType) {
+        const modal = document.getElementById('alarm-ring-modal');
+        modal.classList.add('active');
+
+        const now = new Date();
+        document.getElementById('ring-time-display').textContent =
+          `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+
+        renderMissionPanel(missionType);
+      }
+
+      function renderMissionPanel(missionType) {
+        const panel = document.getElementById('mission-panel');
+        currentMission = { type: missionType };
+
+        if (missionType === 'quiz') {
+          const quiz = generateMathQuiz();
+          currentMission.answer = quiz.answer;
+          panel.innerHTML = `
+            <div style="font-size:0.75rem;color:rgba(255,200,200,0.7);margin-bottom:8px;">🧠 두뇌 강제 기상 미션</div>
+            <div class="mission-question">${quiz.question}</div>
+            <input type="number" class="mission-input" id="quiz-answer" placeholder="정답 입력" inputmode="numeric">
+          `;
+        } else if (missionType === 'typing') {
+          const sentence = getRandomTypingSentence();
+          currentMission.sentence = sentence;
+          panel.innerHTML = `
+            <div style="font-size:0.75rem;color:rgba(255,200,200,0.7);margin-bottom:8px;">⌨️ 출결 타자 미션</div>
+            <div class="mission-sentence">"${sentence}"</div>
+            <textarea class="mission-typing-input" id="typing-answer" placeholder="위 문장을 정확히 입력하세요"></textarea>
+          `;
+        } else if (missionType === 'tap') {
+          tapState = createTapMission(30, 5);
+          currentMission.tapState = tapState;
+          panel.innerHTML = `
+            <div style="font-size:0.75rem;color:rgba(255,200,200,0.7);margin-bottom:8px;">👊 양 연타 미션</div>
+            <div class="tap-count"><span id="tap-current">0</span> / 30</div>
+            <button class="tap-button" id="tap-btn">🐑</button>
+            <div style="font-size:0.7rem;color:rgba(255,255,255,0.5);">5초 안에 30번 연타!</div>
+          `;
+          startTapMission();
+        }
+
+        // 타이머 초기화
+        clearInterval(missionTimerInterval);
+        startMissionTimer(missionType === 'tap' ? 5 : 30);
+      }
+
+      function startTapMission() {
+        const tapBtn = document.getElementById('tap-btn');
+        const tapDisplay = document.getElementById('tap-current');
+        if (!tapBtn) return;
+        tapBtn.addEventListener('click', () => {
+          tapState.current++;
+          tapDisplay.textContent = tapState.current;
+          tapBtn.style.transform = 'scale(0.85)';
+          setTimeout(() => tapBtn.style.transform = '', 100);
+          if (tapState.current >= tapState.targetCount) {
+            missionSuccess();
+          }
+        });
+      }
+
+      function startMissionTimer(sec) {
+        const fill = document.getElementById('mission-timer-fill');
+        let elapsed = 0;
+        fill.style.width = '100%';
+        missionTimerInterval = setInterval(() => {
+          elapsed++;
+          fill.style.width = `${Math.max(0, (1 - elapsed / sec) * 100)}%`;
+          if (elapsed >= sec) {
+            clearInterval(missionTimerInterval);
+            if (currentMission?.type !== 'tap') return; // tap은 이미 실패처리
+            showToast('⏰ 시간 초과! 다시 시도하세요', 'error');
+            renderMissionPanel(currentMission.type); // 재시작
+          }
+        }, 1000);
+      }
+
+      // ── 미션 제출 ──
+      document.getElementById('btn-mission-submit').addEventListener('click', checkMission);
+
+      function checkMission() {
+        if (!currentMission) return;
+
+        if (currentMission.type === 'quiz') {
+          const input = document.getElementById('quiz-answer');
+          const val = parseInt(input?.value || '');
+          if (isNaN(val)) { showToast('❌ 숫자를 입력하세요!', 'error'); return; }
+          if (val === currentMission.answer) {
+            missionSuccess();
+          } else {
+            showToast(`❌ 틀렸어요! 다시 생각해보세요`, 'error');
+            input.value = '';
+            input.focus();
+          }
+        } else if (currentMission.type === 'typing') {
+          const input = document.getElementById('typing-answer');
+          const val = input?.value?.trim() || '';
+          if (val === currentMission.sentence) {
+            missionSuccess();
+          } else {
+            showToast('❌ 문장이 다릅니다! 정확하게 입력하세요', 'error');
+          }
+        } else if (currentMission.type === 'tap') {
+          if (tapState && tapState.current >= tapState.targetCount) {
+            missionSuccess();
+          } else {
+            showToast(`❌ 아직 부족해요! ${tapState?.current || 0}/30`, 'error');
+          }
+        }
+      }
+
+      function missionSuccess() {
+        clearInterval(missionTimerInterval);
+        dismissAlarm();
+        document.getElementById('alarm-ring-modal').classList.remove('active');
+        document.getElementById('success-overlay').classList.add('active');
+        currentMission = null;
+      }
+
+      // ── 스킵 ──
+      document.getElementById('btn-mission-skip').addEventListener('click', () => {
+        if (!confirm('미션을 스킵하면 출석 페널티가 부여됩니다. 정말 스킵할까요?')) return;
+        clearInterval(missionTimerInterval);
+        stopAlarmSound();
+        document.getElementById('alarm-ring-modal').classList.remove('active');
+        showToast('😱 출석 페널티 -1점! 다음엔 꼭 일어나세요!', 'error', 4000);
+      });
+
+      // ── 성공 닫기 ──
+      document.getElementById('btn-success-close').addEventListener('click', () => {
+        document.getElementById('success-overlay').classList.remove('active');
+      });
+
+      // 초기 렌더링
+      renderAlarmList();
+    });
+  </script>
+</body>
+</html>
