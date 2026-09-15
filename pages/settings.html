@@ -105,73 +105,97 @@
     <!-- 스크롤 영역 -->
     <div class="content">
 
-      <!-- 수면 목표 설정 카드 -->
+      <!-- 1. 출결 비상 기상 알람 설정 -->
       <section class="glass card" style="padding: var(--space-4);">
-        <h3 class="font-bold" data-i18n="sleepGoal.cardTitle" style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--text-secondary);">💤 나의 수면 목표</h3>
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--color-warning);">🚨 출결 비상 기상 알람 설정</h3>
         
-        <div class="flex flex-col gap-3">
-          <!-- 목표 수면시간 -->
-          <div class="setting-item" style="border-bottom:none; padding:0;">
+        <div class="flex flex-col gap-4">
+          <div class="setting-item" style="display:flex;justify-content:space-between;align-items:center;">
             <div class="setting-info">
-              <span class="setting-title" data-i18n="sleepGoal.title">목표 수면 시간</span>
-              <span class="setting-desc" data-i18n="sleepGoal.desc">기본 수면 8시간을 권장해요</span>
-            </div>
-            <div>
-              <select id="select-sleep-goal" class="glass" style="border-radius: var(--radius-sm); border:1px solid var(--glass-border); padding:var(--space-2) var(--space-3); color:#fff; font-size:var(--font-size-sm); background: rgba(0,0,0,0.3);">
-                <option value="360" data-i18n="sleepGoal.option.360">6시간 (360분)</option>
-                <option value="420" data-i18n="sleepGoal.option.420">7시간 (420분)</option>
-                <option value="480" selected data-i18n="sleepGoal.option.480">8시간 (480분)</option>
-                <option value="540" data-i18n="sleepGoal.option.540">9시간 (540분)</option>
-                <option value="600" data-i18n="sleepGoal.option.600">10시간 (600분)</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="divider" style="margin: 8px 0;"></div>
-
-          <!-- 알람 시간 조절 -->
-          <div class="time-input-group">
-            <div class="time-input-card" style="padding:var(--space-3);">
-              <span class="time-input-label" data-i18n="alarm.bed.title">⏰ 취침 알림 시간</span>
-              <input type="time" id="setting-bed-alarm" class="time-input" style="font-size:var(--font-size-lg);" value="22:30">
-            </div>
-            <div class="time-input-card" style="padding:var(--space-3);">
-              <span class="time-input-label" data-i18n="alarm.wake.title">☀️ 기본 기상 시간</span>
-              <input type="time" id="setting-wake-alarm" class="time-input" style="font-size:var(--font-size-lg);" value="07:00">
-            </div>
-          </div>
-          <p class="text-muted" style="font-size: var(--font-size-2xs); line-height: 1.5; margin-top: var(--space-2);" data-i18n-html="alarm.hint">
-            실제 모닝콜은 <strong>수면 탭</strong>에서 입력한 기상 시간에 울립니다. 위 값은 처음 입력 시 기본값으로 쓰여요.
-          </p>
-
-          <div class="divider" style="margin: 8px 0;"></div>
-
-          <!-- 모닝콜 간편 모드 -->
-          <div class="setting-item" style="border-bottom:none; padding:0;">
-            <div class="setting-info">
-              <span class="setting-title" data-i18n="morningCallSimple.title">🔕 모닝콜 간편 끄기</span>
-              <span class="setting-desc" data-i18n="morningCallSimple.desc">켜면 쓰다듬기/먹이주기 없이 알람 끄기 버튼만 표시됩니다.</span>
+              <span class="setting-title" style="font-weight:700;">1교시 강제 기상 모드</span>
+              <span class="setting-desc" style="display:block;font-size:0.75rem;color:var(--text-muted);">알람 볼륨 100% 고정 & 사이렌 강제 출력</span>
             </div>
             <label class="switch">
-              <input type="checkbox" id="switch-morningcall-simple">
+              <input type="checkbox" id="toggle-force-wake" checked>
               <span class="switch-slider"></span>
             </label>
           </div>
-          <div class="setting-item" style="border-bottom:none; padding:0; margin-top: var(--space-3);">
+
+          <div class="setting-item" style="display:flex;justify-content:space-between;align-items:center;">
             <div class="setting-info">
-              <span class="setting-title" data-i18n="morningCallPreset.title">🎵 모닝콜 사운드</span>
-              <span class="setting-desc" data-i18n="morningCallPreset.desc">부드럽고 따뜻한 아침 인사를 고를 수 있어요.</span>
+              <span class="setting-title" style="font-weight:700;">기상 해제 미션 기본값</span>
+              <span class="setting-desc" style="display:block;font-size:0.75rem;color:var(--text-muted);">알람이 울릴 때 수행할 강제 기상 미션</span>
             </div>
-            <select id="select-morningcall-preset" class="glass" style="border-radius: var(--radius-sm); border:1px solid var(--glass-border); padding:var(--space-2) var(--space-3); color:#fff; font-size:var(--font-size-sm); background: rgba(0,0,0,0.3);">
-              <option value="dreamy" data-i18n="morningCallPreset.option.dreamy">Shee8lramy Morning</option>
-              <option value="gentle" data-i18n="morningCallPreset.option.gentle">Gentle Bell</option>
-              <option value="cozy" data-i18n="morningCallPreset.option.cozy">Cozy Morning</option>
+            <select id="select-default-mission" class="glass" style="border-radius: var(--radius-sm); border:1px solid var(--glass-border); padding:var(--space-2) var(--space-3); color:#fff; font-size:var(--font-size-xs); background: rgba(0,0,0,0.4);">
+              <option value="quiz">2자리 암산 퀴즈</option>
+              <option value="typing" selected>사유서 타자 입력</option>
+              <option value="shake">양 흔들기 30회</option>
             </select>
           </div>
-          <div class="flex gap-2" style="margin-top: var(--space-3);">
-            <button type="button" class="btn btn-secondary w-full" id="btn-test-morningcall-now" data-i18n="morningCall.now">지금 테스트</button>
-            <button type="button" class="btn btn-secondary w-full" id="btn-test-morningcall-minute" data-i18n="morningCall.minute">1분 뒤 테스트</button>
+        </div>
+      </section>
+
+      <!-- 2. 학사 목표 관리 -->
+      <section class="glass card" style="padding: var(--space-4); margin-top: var(--space-3);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--color-purple-soft);">🎓 학사 목표 관리</h3>
+        
+        <div class="flex flex-col gap-4">
+          <div>
+            <div style="display:flex;justify-content:space-between;margin-bottom:6px;">
+              <span style="font-size:0.85rem;font-weight:700;">이번 학기 목표 평점 (GPA)</span>
+              <span id="target-gpa-val" style="font-size:0.9rem;font-weight:900;color:var(--color-warning);">3.8 / 4.5</span>
+            </div>
+            <input type="range" class="bgm-slider" id="slider-target-gpa" min="2.0" max="4.5" step="0.1" value="3.8" oninput="document.getElementById('target-gpa-val').textContent = this.value + ' / 4.5';">
           </div>
+
+          <div class="setting-item" style="display:flex;justify-content:space-between;align-items:center;margin-top:4px;">
+            <div class="setting-info">
+              <span class="setting-title" style="font-weight:700;">결석 허용 한계선 알림</span>
+              <span class="setting-desc" style="display:block;font-size:0.75rem;color:var(--text-muted);">과목당 결석 2회 초과 시 강제 경고 출력</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-absent-limit-warn" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. 친구 출결 연동 설정 -->
+      <section class="glass card" style="padding: var(--space-4); margin-top: var(--space-3);">
+        <h3 class="font-bold" style="font-size: var(--font-size-sm); margin-bottom: var(--space-3); color: var(--color-success);">👥 친구 출결 연동 설정</h3>
+        
+        <div class="flex flex-col gap-4">
+          <div class="setting-item" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="setting-info">
+              <span class="setting-title" style="font-weight:700;">내 기상 상태 라이브 공유</span>
+              <span class="setting-desc" style="display:block;font-size:0.75rem;color:var(--text-muted);">친구들에게 나의 생존/위험 상태 실시간 노출</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-share-wake-status" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+
+          <div class="setting-item" style="display:flex;justify-content:space-between;align-items:center;">
+            <div class="setting-info">
+              <span class="setting-title" style="font-weight:700;">친구 찬스 샤우팅 알람</span>
+              <span class="setting-desc" style="display:block;font-size:0.75rem;color:var(--text-muted);">지각 위기 시 친구의 찌르기 메시지 수신</span>
+            </div>
+            <label class="switch">
+              <input type="checkbox" id="toggle-receive-friend-shout" checked>
+              <span class="switch-slider"></span>
+            </label>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. 앱 정보 및 버전 -->
+      <section class="glass card" style="padding: var(--space-4); margin-top: var(--space-3); text-align: center;">
+        <div style="font-size: 1.2rem; font-weight: 900; color: var(--text-primary); margin-bottom: 4px;">🐑 Shee8lramy (쉽알라미)</div>
+        <div style="font-size: 0.8rem; color: var(--text-muted);">F학점 방지 대학생 전용 출결 방어 에이전트</div>
+        <div style="margin-top: 12px; font-size: 0.85rem; font-weight: 800; color: var(--color-purple-soft);" id="app-version">
+          Shee8lramy v2.0.0 (출결 방어 에디션)
         </div>
       </section>
 

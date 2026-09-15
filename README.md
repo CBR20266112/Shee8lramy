@@ -2,14 +2,14 @@
 
 > **"F학점 위기 탈출! 대학생 출결 방어 & 학사 관리 에이전트"**
 
-[![GitHub Pages Deployment](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-brightgreen?style=for-the-badge&logo=github)](https://cbr20266112.github.io/Shee8lramy/)
+[![GitHub Pages Deployment](https://img.shields.io/badge/GitHub%20Pages-Live%20Demo-brightgreen?style=for-the-badge&logo=github)](https://cbr20266112.github.io/Shee8lramy/index.html)
 [![Repository](https://img.shields.io/badge/GitHub-Repository-blue?style=for-the-badge&logo=github)](https://github.com/CBR20266112/Shee8lramy)
 
 ---
 
 ## 🌐 실시간 웹앱 서비스 배포 링크
 
-👉 **[Shee8lramy 데모 바로가기 (https://cbr20266112.github.io/Shee8lramy/)](https://cbr20266112.github.io/Shee8lramy/)**
+👉 **[Shee8lramy 데모 바로가기 (https://cbr20266112.github.io/Shee8lramy/index.html)](https://cbr20266112.github.io/Shee8lramy/index.html)**
 
 ---
 

@@ -230,8 +230,10 @@
         </div>
 
         <!-- 양 캐릭터 그래픽 컨테이너 -->
-        <div class="sheep-container" id="sheep-container" style="position:relative; cursor:pointer;">
-          <div id="sheep-render-target" style="position:relative;width:100%;height:100%;z-index:1;"></div>
+        <div class="sheep-container" id="sheep-container" style="position:relative; cursor:pointer; min-height: 220px; display: flex; align-items: center; justify-content: center; padding: 12px 0;">
+          <div id="sheep-render-target" style="position:relative;width:100%;height:200px;z-index:1;display:flex;align-items:center;justify-content:center;">
+            <img id="sheeplramy-main-img" src="./assets/pet/poses/pose1.png" alt="쉽라미 마스코트" style="max-width: 200px; max-height: 200px; object-fit: contain; filter: drop-shadow(0 8px 24px rgba(167,139,250,0.5)); transition: transform 0.3s ease;" onerror="this.onerror=null; this.src='./assets/icon/app_icon_candidate_night.png';">
+          </div>
           <!-- 부위별 터치 존 오버레이 (투명) -->
           <div id="sheep-touch-overlay" style="position:absolute;inset:0;z-index:10;">
             <!-- 왼쪽 귀 -->
@@ -250,8 +252,8 @@
         </div>
 
         <!-- 말풍선 -->
-        <div class="speech-bubble" id="speech-bubble" data-i18n="home.speechBubble">
-          "오늘도 잘 자고 좋은 꿈 꾸자, 양!"
+        <div class="speech-bubble" id="speech-bubble">
+          "일어나... 지금 안 일어나면 재수강 확정이야..."
         </div>
 
         <!-- XP 진행 바 -->
@@ -455,19 +457,20 @@
   <div class="overlay" id="onboarding-overlay"></div>
   <div class="modal" id="onboarding-modal" style="max-width: 92%; width: 400px;">
     <div class="modal-handle"></div>
-    <h3 class="font-bold text-center" style="font-size: var(--font-size-lg); margin-bottom: var(--space-4);" data-i18n="onboarding.title">Get started with Shee8lramy</h3>
-    <div class="text-muted" style="font-size: var(--font-size-sm); line-height:1.7; margin-bottom: var(--space-4);" data-i18n-html="onboarding.description"></div>
+    <h3 class="font-bold text-center" style="font-size: var(--font-size-lg); margin-bottom: var(--space-4); color: var(--color-warning);">🚨 [Shee8lramy 출결 방어 준수 서약]</h3>
+    <div class="text-muted" style="font-size: var(--font-size-sm); line-height:1.7; margin-bottom: var(--space-4); background: rgba(255,255,255,0.04); padding: 12px; border-radius: 8px;">
+      <strong>[대학생 출결 사수 3대 계율]</strong><br>
+      1. 본인은 1교시 자체휴강의 달콤한 유혹에 굴복하지 않을 것을 엄숙히 선서합니다.<br>
+      2. 폭우·폭설이 몰아쳐도 셔틀버스를 향해 전력 질주할 것을 다짐합니다.<br>
+      3. F학점으로 인해 마스코트 쉽라미의 털이 깎이는 비극을 방지하겠습니다.
+    </div>
     <div class="flex flex-col gap-3">
-      <button class="btn btn-secondary w-full" id="btn-show-terms" data-i18n="onboarding.showTerms">View terms</button>
-      <button class="btn btn-secondary w-full" id="btn-show-privacy-policy" data-i18n="onboarding.showPrivacy">View privacy policy</button>
-      <div class="glass" style="padding: var(--space-4); border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
-        <label class="onboarding-checkbox-row"><input type="checkbox" id="onboarding-checkbox-terms"><span data-i18n="onboarding.checkbox.terms">I have reviewed and agree to the terms.</span></label>
-        <label class="onboarding-checkbox-row"><input type="checkbox" id="onboarding-checkbox-privacy"><span data-i18n="onboarding.checkbox.privacy">I have reviewed and agree to the privacy policy.</span></label>
-        <label class="onboarding-checkbox-row"><input type="checkbox" id="onboarding-checkbox-wellness"><span data-i18n="onboarding.checkbox.wellness">I understand this is a sleep wellness app, not medical treatment.</span></label>
+      <div class="glass" style="padding: var(--space-3); border-radius: var(--radius-md); border: 1px solid var(--glass-border);">
+        <label class="onboarding-checkbox-row"><input type="checkbox" id="onboarding-checkbox-terms" checked><span style="font-size:0.85rem;">[필수] 출결 방어 계율에 서약합니다.</span></label>
+        <label class="onboarding-checkbox-row"><input type="checkbox" id="onboarding-checkbox-privacy" checked><span style="font-size:0.85rem;">[필수] F학점 방지 서비스를 시작합니다.</span></label>
       </div>
       <div class="flex gap-2">
-        <button class="btn btn-secondary w-full" id="btn-onboarding-cancel" data-i18n="onboarding.cancel">Later</button>
-        <button class="btn btn-primary w-full" id="btn-onboarding-next" disabled data-i18n="onboarding.next">Agree & Start</button>
+        <button class="btn btn-primary w-full" id="btn-onboarding-next" style="font-weight:900;">🔥 [출결 방어 서약하고 시작하기]</button>
       </div>
     </div>
   </div>
@@ -715,15 +718,23 @@
       const SPLASH_LAST_SEEN_KEY = 'ss_splash_last_seen';
 
       function shouldShowSplash() {
-        const onboardingConsent = getOnboardingConsent();
-        if (!onboardingConsent || !onboardingConsent.onboardingCompleted) {
-          const lastSeen = Number(localStorage.getItem(SPLASH_LAST_SEEN_KEY) || 0);
-          if (lastSeen && Date.now() - lastSeen < SPLASH_COOLDOWN_MS) {
-            return false;
-          }
-          return true;
-        }
-        return false;
+        return false; // 오프닝 및 스플래시 비활성화 -> 접속 즉시 대시보드 노출
+      }
+
+      // 쉽라미 B급 대학생 현실 밀착형 대사 (6종 이상 무작위)
+      const SHEEPLRAMY_QUOTES = [
+        "일어나... 지금 안 일어나면 재수강 확정이야...",
+        "교수님 출석부 넘기신다!! 지금 당장 뛰어!!",
+        "오늘 1교시 비 온대! 학내 셔틀 지연되니까 우산 챙겨서 빨리 나와!",
+        "공강이라고 하루 종일 누워있을 셈이야? 과제는 언제 할 건데?",
+        "학점 3점대 무너지면 내 털 다 밀린다... 날 지켜줘...",
+        "단톡방에 과제 공지 떴던데? 캘린더 탭 가서 확인해 봐!"
+      ];
+
+      function updateSheepSpeechBubble() {
+        if (!speechBubble) return;
+        const quote = SHEEPLRAMY_QUOTES[Math.floor(Math.random() * SHEEPLRAMY_QUOTES.length)];
+        speechBubble.textContent = `"${quote}"`;
       }
 
       function showOnboardingModal() {
@@ -884,6 +895,16 @@
       decaySheepStats();
       applyDailyRegularityBonus();
       let sheep = readSheep();
+      updateSheepSpeechBubble();
+
+      sheepContainer?.addEventListener('click', () => {
+        updateSheepSpeechBubble();
+        const mainImg = document.getElementById('sheeplramy-main-img');
+        if (mainImg) {
+          mainImg.style.transform = 'scale(1.15) rotate(5deg)';
+          setTimeout(() => mainImg.style.transform = 'scale(1) rotate(0deg)', 250);
+        }
+      });
 
       function updateAttendanceHeaderBadge() {
         if (!attHeaderBadge) return;
