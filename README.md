@@ -11,8 +11,6 @@
 
 👉 **[Shee8lramy 데모 바로가기 (https://cbr20266112.github.io/Shee8lramy/)](https://cbr20266112.github.io/Shee8lramy/)**
 
-*(경로 뒤에 `/PBL1/` 등 서브디렉토리 없이 루트 주소로 즉시 연결됩니다.)*
-
 ---
 
 ## 🔥 핵심 주요 기능
