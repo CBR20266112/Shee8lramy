@@ -443,14 +443,15 @@
   <div class="overlay" id="privacy-overlay"></div>
   <div class="modal" id="privacy-modal" style="max-width: 92%; width: 360px;">
     <div class="modal-handle"></div>
-    <h3 class="font-bold text-center" style="font-size: var(--font-size-lg); margin-bottom: var(--space-4);" data-i18n="privacy.modal.title">Privacy & Terms</h3>
-    <div class="text-muted" style="font-size: var(--font-size-sm); line-height:1.7; margin-bottom: var(--space-4);" data-i18n-html="privacy.modal.text">
-      Shee8lramy securely stores all app data locally in your browser.<br>
-      No personal identifying information is collected, and usage records are only kept to preserve app state and settings.<br>
-      Please review the terms below to continue.
+    <h3 class="font-bold text-center" style="font-size: var(--font-size-lg); margin-bottom: var(--space-3); color:var(--color-purple-soft);">🔒 개인정보 처리방침 안내</h3>
+    <div class="text-muted" style="font-size: var(--font-size-xs); line-height:1.7; margin-bottom: var(--space-4); background:rgba(255,255,255,0.04); padding:12px; border-radius:8px;">
+      <strong>[Shee8lramy 개인정보 최소 수집 원칙]</strong><br>
+      1. 본 앱은 서버로 학생의 개인 식별 정보(학번, 실명, 주민번호 등)를 일체 전송하지 않으며, 모든 시간표·출결 상태·알람 설정 데이터는 사용자의 기기 내부(localStorage)에만 안전하게 보관됩니다.<br>
+      2. 기상 미션 및 친구 시간표 확인에 필요한 정보는 브라우저 세션 내에서만 가공됩니다.<br>
+      3. 위치 정보는 기상청 캠퍼스 날씨 확인 용도로만 클라이언트 단에서 1회성 조회되며 저장되지 않습니다.
     </div>
     <div class="flex flex-col gap-3">
-      <button class="btn btn-primary w-full" id="btn-privacy-consent-agree" data-i18n="privacy.modal.confirm">Agree and start</button>
+      <button class="btn btn-primary w-full" id="btn-privacy-consent-agree" style="font-weight:900;">동의하고 서비스 시작하기</button>
     </div>
   </div>
 
@@ -721,20 +722,35 @@
         return false; // 오프닝 및 스플래시 비활성화 -> 접속 즉시 대시보드 노출
       }
 
-      // 쉽라미 B급 대학생 현실 밀착형 대사 (6종 이상 무작위)
-      const SHEEPLRAMY_QUOTES = [
-        "일어나... 지금 안 일어나면 재수강 확정이야...",
-        "교수님 출석부 넘기신다!! 지금 당장 뛰어!!",
-        "오늘 1교시 비 온대! 학내 셔틀 지연되니까 우산 챙겨서 빨리 나와!",
-        "공강이라고 하루 종일 누워있을 셈이야? 과제는 언제 할 건데?",
-        "학점 3점대 무너지면 내 털 다 밀린다... 날 지켜줘...",
-        "단톡방에 과제 공지 떴던데? 캘린더 탭 가서 확인해 봐!"
+      // 쉽라미 B급 대학생 현실 밀착형 대사 (15종 무작위)
+      const QUOTES_POOL = [
+        "일어나... 지금 안 일어나면 1교시 교수님이랑 눈 마주친다...",
+        "교수님 출석부 넘기셨다!! 정문에서 공학관까지 3분 컷 가능해? 뛰어!!",
+        "오늘 비 온대. 석현동 버스 연쇄 지연 감지됐다. 우산 챙겨!",
+        "공강이라고 하루 종일 누워있으면 내일의 네가 울고 있을걸?",
+        "학점 3점대 무너지면 내 털 다 깎여... 앙상한 양 되기 싫어 ㅠㅠ",
+        "단톡방에 새 공지 떴어! 캘린더 탭 가서 족보 파싱해 봐!",
+        "교수님: '오늘 결석자는 다음 주 과제 2배입니다' (실화임)",
+        "오늘 학식 메뉴 고기 나온대. 11시 30분에 안 뛰면 줄 50m다.",
+        "자체휴강 1회 = 치킨 한 마리 분량의 등록금이 증발했습니다.",
+        "LMS 과제 제출 마감 10분 전! 서버 터지기 전에 미리 내라!",
+        "도서관 4층 열람실 자리 3개 남았대. 벼락치기 하러 갈 거지?",
+        "사범관 CPR 의무교육 결석하면 졸업 유예인 거 알지? 꼭 가라...",
+        "공학관에서 사범관까지 6분 걸려! 쉬는 시간 10분이니까 세이프야!",
+        "친구 탭 봐봐. '졸려' 걔는 벌써 알람 5개 끄고 기절했대.",
+        "출결 방어 성공 도장 찍으면 오늘 양털 보너스 들어온다!"
       ];
 
       function updateSheepSpeechBubble() {
         if (!speechBubble) return;
-        const quote = SHEEPLRAMY_QUOTES[Math.floor(Math.random() * SHEEPLRAMY_QUOTES.length)];
+        const quote = QUOTES_POOL[Math.floor(Math.random() * QUOTES_POOL.length)];
         speechBubble.textContent = `"${quote}"`;
+      }
+
+      function updateSheepPose(poseNum = 1) {
+        const mainImg = document.getElementById('sheeplramy-main-img');
+        if (!mainImg) return;
+        mainImg.src = `./assets/pet/poses/pose${poseNum}.png`;
       }
 
       function showOnboardingModal() {
@@ -899,11 +915,20 @@
 
       sheepContainer?.addEventListener('click', () => {
         updateSheepSpeechBubble();
+        updateSheepPose(5);
         const mainImg = document.getElementById('sheeplramy-main-img');
         if (mainImg) {
-          mainImg.style.transform = 'scale(1.15) rotate(5deg)';
-          setTimeout(() => mainImg.style.transform = 'scale(1) rotate(0deg)', 250);
+          mainImg.style.transform = 'scale(1.18) rotate(6deg)';
+          setTimeout(() => mainImg.style.transform = 'scale(1) rotate(0deg)', 300);
         }
+        setTimeout(() => updateSheepPose(1), 1500);
+      });
+
+      btnAttendance?.addEventListener('click', () => {
+        const att = getAttendance();
+        showToast(`오늘의 캠퍼스 출결 방어 성공! 🛡️ 연속 ${att.streak + 1}일 출석 달성 (+10 XP / +10 양털)`, 'success');
+        updateSheepPose(5);
+        setTimeout(() => updateSheepPose(1), 2000);
       });
 
       function updateAttendanceHeaderBadge() {
