@@ -74,7 +74,7 @@
       padding: var(--space-1) 0;
     }
     .cal-cell {
-      min-height: 52px;
+      min-height: 54px;
       background: rgba(255, 255, 255, 0.03);
       border: 1px solid rgba(255, 255, 255, 0.05);
       border-radius: var(--radius-sm);
@@ -84,6 +84,7 @@
       flex-direction: column;
       justify-content: space-between;
       transition: all 0.2s ease;
+      position: relative;
     }
     .cal-cell:hover {
       background: rgba(255, 255, 255, 0.08);
@@ -97,6 +98,20 @@
       background: rgba(255, 217, 61, 0.1);
       border-color: rgba(255, 217, 61, 0.4);
     }
+    .cal-cell.highlight-sojeon {
+      border: 2px solid #ffd93d !important;
+      background: linear-gradient(135deg, rgba(255,217,61,0.2), rgba(245,158,11,0.2)) !important;
+      animation: pulseGold 2s infinite alternate;
+    }
+    .cal-cell.highlight-cpr {
+      border: 2px solid #6bcb77 !important;
+      background: linear-gradient(135deg, rgba(107,203,119,0.2), rgba(16,185,129,0.2)) !important;
+    }
+    @keyframes pulseGold {
+      from { box-shadow: 0 0 4px rgba(255,217,61,0.4); }
+      to { box-shadow: 0 0 14px rgba(255,217,61,0.8); }
+    }
+
     .cal-num {
       font-size: 0.75rem;
       font-weight: 800;
@@ -117,6 +132,7 @@
     .dot-yellow { background: #ffd93d; }
     .dot-blue { background: #4d96ff; }
     .dot-green { background: #6bcb77; }
+    .dot-purple { background: #a78bfa; }
 
     /* ── 2. 에타 스타일 주간 시간표 ── */
     .timetable-grid {
@@ -143,12 +159,6 @@
       padding: 8px 0;
       border-top: 1px dashed rgba(255,255,255,0.05);
     }
-    .tt-col {
-      display: flex;
-      flex-direction: column;
-      gap: 2px;
-      position: relative;
-    }
     .tt-card {
       padding: 6px;
       border-radius: 6px;
@@ -160,7 +170,7 @@
     }
     .tt-card-title { font-weight: 800; font-size: 0.7rem; }
     .tt-card-room { opacity: 0.85; font-size: 0.6rem; }
-    
+
     .tt-empty-gap {
       border: 1px dashed rgba(255, 217, 61, 0.3);
       border-radius: 6px;
@@ -193,6 +203,32 @@
     }
     @keyframes dashMove {
       to { stroke-dashoffset: -12; }
+    }
+
+    /* ── NLP 퀵 테스트 버튼 ── */
+    .quick-btn-bar {
+      display: flex;
+      gap: 6px;
+      overflow-x: auto;
+      padding-bottom: 8px;
+      margin-bottom: var(--space-2);
+      scrollbar-width: none;
+    }
+    .quick-btn {
+      white-space: nowrap;
+      padding: 4px 10px;
+      border-radius: 12px;
+      border: 1px solid rgba(167,139,250,0.3);
+      background: rgba(167,139,250,0.1);
+      color: var(--color-purple-soft);
+      font-size: 0.65rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    .quick-btn:hover {
+      background: rgba(167,139,250,0.25);
+      color: #fff;
     }
   </style>
 </head>
@@ -237,11 +273,15 @@
 
       <!-- ─── [뷰 A: 월별 학사 캘린더] ─── -->
       <div class="tab-view active" id="view-month-container">
-        <!-- 캘린더 컨트롤 -->
+        <!-- 캘린더 월 이동 네비게이션 -->
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:var(--space-3);">
-          <div style="font-size:var(--font-size-md);font-weight:900;color:var(--text-primary);" id="cal-month-title">2026년 9월</div>
-          <div style="font-size:var(--font-size-xs);color:var(--text-muted);">
-            🔴시험 🟡과제 🔵행사 🟢약속
+          <div style="display:flex;align-items:center;gap:8px;">
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-prev-month" style="padding:2px 8px;font-size:0.75rem;">◀ 이전달</button>
+            <div style="font-size:var(--font-size-md);font-weight:900;color:var(--text-primary);" id="cal-month-title">2026년 11월</div>
+            <button type="button" class="btn btn-secondary btn-sm" id="btn-next-month" style="padding:2px 8px;font-size:0.75rem;">다음달 ▶</button>
+          </div>
+          <div style="font-size:0.6rem;color:var(--text-muted);">
+            🔴시험 🟡과제 🔵행사 🟢의무
           </div>
         </div>
 
@@ -284,14 +324,9 @@
 
           <!-- 간이 캠퍼스 미니 맵 SVG -->
           <svg class="route-map-svg" viewBox="0 0 300 50">
-            <!-- 출발 건물 -->
             <rect x="10" y="10" width="60" height="30" rx="6" fill="rgba(167,139,250,0.3)" stroke="#a78bfa" stroke-width="1.5"/>
             <text x="40" y="28" font-size="9" fill="#fff" text-anchor="middle" font-weight="bold">공학관 3호관</text>
-            
-            <!-- 점선 이동 경로 -->
             <path d="M 70 25 Q 150 5 230 25" fill="none" class="path-line" stroke-width="2"/>
-            
-            <!-- 도착 건물 -->
             <rect x="230" y="10" width="60" height="30" rx="6" fill="rgba(107,203,119,0.3)" stroke="#6bcb77" stroke-width="1.5"/>
             <text x="260" y="28" font-size="9" fill="#fff" text-anchor="middle" font-weight="bold">사범관 2호관</text>
           </svg>
@@ -307,6 +342,13 @@
       <section class="glass card" style="padding: var(--space-4); margin-top: var(--space-4);">
         <div style="font-size:var(--font-size-xs);font-weight:800;color:var(--text-secondary);margin-bottom:var(--space-2);">💬 자연어 일정 자동 등록 (카카오톡 스타일)</div>
         
+        <!-- 단톡방 공지 시연용 퀵 버튼 3종 -->
+        <div class="quick-btn-bar">
+          <button type="button" class="quick-btn" id="btn-quick-1">🔘 [소전 최종평가 공지]</button>
+          <button type="button" class="quick-btn" id="btn-quick-2">🔘 [CPR 의무교육 공지]</button>
+          <button type="button" class="quick-btn" id="btn-quick-3">🔘 [학생회 입후보 공지]</button>
+        </div>
+
         <!-- 파싱 미리보기 카드 -->
         <div id="nlp-preview-card" style="display:none;background:rgba(167,139,250,0.15);border:1px solid rgba(167,139,250,0.3);padding:var(--space-3);border-radius:var(--radius-sm);margin-bottom:var(--space-3);">
           <div style="font-size:var(--font-size-2xs);color:var(--color-purple-soft);font-weight:700;">✨ 파싱 결과 미리보기</div>
@@ -314,7 +356,7 @@
         </div>
 
         <div style="display:flex;gap:var(--space-2);">
-          <input type="text" id="input-nlp-chat" class="glass" style="flex:1;border-radius:var(--radius-sm);border:1px solid var(--glass-border);padding:var(--space-3);color:#fff;font-size:var(--font-size-xs);" placeholder="예: 내일 오후 4시 학생회관 학식 약속">
+          <input type="text" id="input-nlp-chat" class="glass" style="flex:1;border-radius:var(--radius-sm);border:1px solid var(--glass-border);padding:var(--space-3);color:#fff;font-size:var(--font-size-xs);" placeholder="예: 11월 3일 화요일 오후 2시 공학관 3호관 소전 평가">
           <button type="button" class="btn btn-primary" id="btn-add-nlp-chat" style="font-size:var(--font-size-xs);padding:0 16px;">등록</button>
         </div>
       </section>
@@ -356,10 +398,19 @@
     </nav>
   </main>
 
+  <!-- 특수 행사 팝업 모달 -->
+  <div class="overlay" id="event-popup-overlay"></div>
+  <div class="modal" id="event-popup-modal" style="max-width: 90%; width: 360px;">
+    <div class="modal-handle"></div>
+    <h3 class="font-bold text-center" style="font-size: var(--font-size-md); margin-bottom: var(--space-3);" id="popup-modal-title">⭐ 이벤트 안내</h3>
+    <div style="font-size: var(--font-size-xs); line-height: 1.6; color: var(--text-primary); margin-bottom: var(--space-4);" id="popup-modal-body"></div>
+    <button type="button" class="btn btn-primary w-full" id="btn-close-event-popup">확인했습니다</button>
+  </div>
+
   <script type="module">
     import { initCommon, showToast } from '../js/app.js';
     import { getSheep } from '../js/storage.js';
-    import { parseNaturalLanguage, getCalendarEvents, saveCalendarEvent, TIMETABLE_COURSES, MONTHLY_EVENTS } from '../js/nlp-calendar.js';
+    import { parseNaturalLanguage, getCalendarEvents, saveCalendarEvent, TIMETABLE_COURSES } from '../js/nlp-calendar.js';
 
     document.addEventListener('DOMContentLoaded', () => {
       initCommon();
@@ -385,15 +436,40 @@
         viewMonthContainer.classList.remove('active');
       });
 
-      // ─── 1. 월별 학사 캘린더 렌더링 ───
+      // ─── 1. 월별 학사 캘린더 렌더링 & 월 이동 ───
+      let currentYear = 2026;
+      let currentMonthIdx = 10; // 0-indexed: 10 = 11월
+
       const calGrid = document.getElementById('calendar-grid');
+      const calMonthTitle = document.getElementById('cal-month-title');
       const selectedDateTitle = document.getElementById('selected-date-title');
       const selectedDateEvents = document.getElementById('selected-date-events');
       const selectedDateDday = document.getElementById('selected-date-dday');
+      const btnPrevMonth = document.getElementById('btn-prev-month');
+      const btnNextMonth = document.getElementById('btn-next-month');
 
       const DAYS = ['일', '월', '화', '수', '목', '금', '토'];
 
+      btnPrevMonth.addEventListener('click', () => {
+        if (currentMonthIdx > 8) { // 최소 9월
+          currentMonthIdx--;
+          renderCalendar();
+        } else {
+          showToast('2026학년도 2학기 범위 내에서 이동 가능합니다.', 'default');
+        }
+      });
+
+      btnNextMonth.addEventListener('click', () => {
+        if (currentMonthIdx < 10) { // 최대 11월
+          currentMonthIdx++;
+          renderCalendar();
+        } else {
+          showToast('11월 학사 일정이 최종 월입니다.', 'default');
+        }
+      });
+
       function renderCalendar() {
+        calMonthTitle.textContent = `${currentYear}년 ${currentMonthIdx + 1}월`;
         calGrid.innerHTML = '';
         DAYS.forEach(d => {
           const h = document.createElement('div');
@@ -402,13 +478,9 @@
           calGrid.appendChild(h);
         });
 
-        // 2026년 9월 기준 (30일)
-        const year = 2026;
-        const month = 8; // 0-indexed (9월)
-        const firstDay = new Date(year, month, 1).getDay(); // 화요일(2)
-        const totalDays = 30;
+        const firstDay = new Date(currentYear, currentMonthIdx, 1).getDay();
+        const totalDays = new Date(currentYear, currentMonthIdx + 1, 0).getDate();
 
-        // 이전달 빈칸
         for (let i = 0; i < firstDay; i++) {
           const empty = document.createElement('div');
           empty.className = 'cal-cell';
@@ -419,16 +491,22 @@
         const events = getCalendarEvents();
 
         for (let day = 1; day <= totalDays; day++) {
-          const dateStr = `2026-09-${String(day).padStart(2, '0')}`;
+          const monthStr = String(currentMonthIdx + 1).padStart(2, '0');
+          const dayStr = String(day).padStart(2, '0');
+          const dateStr = `${currentYear}-${monthStr}-${dayStr}`;
           const dayEvents = events.filter(e => e.date === dateStr);
 
           const cell = document.createElement('div');
-          cell.className = `cal-cell ${day === 15 ? 'today' : ''}`;
+          let extraClass = '';
+          if (dateStr === '2026-11-17') extraClass = 'highlight-sojeon';
+          if (dateStr === '2026-11-19') extraClass = 'highlight-cpr';
+
+          cell.className = `cal-cell ${extraClass}`;
           cell.dataset.dateStr = dateStr;
 
           const num = document.createElement('div');
           num.className = 'cal-num';
-          num.textContent = day;
+          num.innerHTML = day === 17 && currentMonthIdx === 10 ? '⭐ 17' : day;
           cell.appendChild(num);
 
           if (dayEvents.length > 0) {
@@ -436,7 +514,7 @@
             dots.className = 'cal-dots';
             dayEvents.forEach(e => {
               const dot = document.createElement('div');
-              const type = e.type || (e.category.includes('시험') ? 'red' : e.category.includes('과제') ? 'yellow' : e.category.includes('행사') ? 'blue' : 'green');
+              const type = e.type || (e.category.includes('시험') ? 'red' : e.category.includes('과제') ? 'yellow' : 'blue');
               dot.className = `dot dot-${type}`;
               dots.appendChild(dot);
             });
@@ -446,14 +524,26 @@
           cell.addEventListener('click', () => {
             document.querySelectorAll('.cal-cell').forEach(c => c.classList.remove('selected'));
             cell.classList.add('selected');
+
+            // 특수 날짜 모달 팝업 인터랙션
+            if (dateStr === '2026-11-17') {
+              showEventModal('⭐ 2026 소프트웨어 전시회 (소전 본행사)', '🏆 우석홀 부스 지킴이 / 전체 학생 필수 출석 체크!<br>학과장님 축사 및 프로젝트 부스 운영 (미출석 시 학점 불이익)');
+            } else if (dateStr === '2026-11-19') {
+              showEventModal('🚨 사범관 1호관 CPR 교육 경고', '⚠️ 교원자격증 필수 이수 요건!<br>결석 시 1년 유예되며 졸업이 불가합니다. 편한 바지를 반드시 착용하세요.');
+            }
+
             renderDayBriefing(dateStr, dayEvents);
           });
 
           calGrid.appendChild(cell);
         }
 
-        // 기본 오늘(9월 15일) 브리핑
-        renderDayBriefing('2026-09-18', events.filter(e => e.date === '2026-09-18'));
+        // 초기 11월 17일 브리핑 세팅
+        if (currentMonthIdx === 10) {
+          renderDayBriefing('2026-11-17', events.filter(e => e.date === '2026-11-17'));
+        } else {
+          renderDayBriefing(`${currentYear}-${String(currentMonthIdx + 1).padStart(2, '0')}-01`, events.filter(e => e.date.endsWith('-01')));
+        }
       }
 
       function renderDayBriefing(dateStr, dayEvents) {
@@ -470,25 +560,47 @@
 
         dayEvents.forEach(e => {
           const item = document.createElement('div');
-          item.style.cssText = 'display:flex;align-items:center;justify-content:space-between;padding:8px 12px;background:rgba(255,255,255,0.04);border-radius:6px;border:1px solid rgba(255,255,255,0.06);';
+          item.style.cssText = 'display:flex;flex-direction:column;gap:4px;padding:10px 12px;background:rgba(255,255,255,0.04);border-radius:6px;border:1px solid rgba(255,255,255,0.08);';
           item.innerHTML = `
-            <div>
+            <div style="display:flex;align-items:center;justify-content:space-between;">
               <div style="font-size:var(--font-size-xs);font-weight:800;color:#fff;">${e.category} ${e.title}</div>
-              <div style="font-size:var(--font-size-2xs);color:var(--text-muted);margin-top:2px;">📍 ${e.location}</div>
+              <span style="font-size:0.65rem;padding:2px 8px;border-radius:10px;background:rgba(167,139,250,0.2);color:var(--color-purple-soft);font-weight:700;">${e.dday || '진행중'}</span>
             </div>
-            <span style="font-size:0.65rem;padding:2px 8px;border-radius:10px;background:rgba(167,139,250,0.2);color:var(--color-purple-soft);font-weight:700;">${e.dday || '진행중'}</span>
+            <div style="font-size:var(--font-size-2xs);color:var(--text-muted);">📍 ${e.location} ${e.time ? `(${e.time})` : ''}</div>
+            ${e.memo ? `<div style="font-size:0.65rem;color:#ffd93d;background:rgba(255,217,61,0.1);padding:4px 8px;border-radius:4px;margin-top:2px;">💡 ${e.memo}</div>` : ''}
           `;
           selectedDateEvents.appendChild(item);
         });
       }
 
-      // ─── 2. 주간 시간표 (에타형) 렌더링 ───
+      // ─── 특수 행사 모달 ───
+      const popupOverlay = document.getElementById('event-popup-overlay');
+      const popupModal = document.getElementById('event-popup-modal');
+      const popupTitle = document.getElementById('popup-modal-title');
+      const popupBody = document.getElementById('popup-modal-body');
+      const btnClosePopup = document.getElementById('btn-close-event-popup');
+
+      function showEventModal(title, htmlContent) {
+        popupTitle.textContent = title;
+        popupBody.innerHTML = htmlContent;
+        popupOverlay.classList.add('active');
+        popupModal.classList.add('active');
+      }
+
+      btnClosePopup.addEventListener('click', () => {
+        popupOverlay.classList.remove('active');
+        popupModal.classList.remove('active');
+      });
+      popupOverlay.addEventListener('click', () => {
+        popupOverlay.classList.remove('active');
+        popupModal.classList.remove('active');
+      });
+
+      // ─── 2. 주간 시간표 렌더링 ───
       const ttGrid = document.getElementById('timetable-grid');
 
       function renderTimetable() {
         ttGrid.innerHTML = '';
-        
-        // 헤더 (시간/월~금)
         const emptyH = document.createElement('div');
         emptyH.className = 'tt-header';
         emptyH.textContent = '시간';
@@ -501,22 +613,18 @@
           ttGrid.appendChild(h);
         });
 
-        // 09:00 ~ 17:00 시간축
         const hours = ['09:00', '10:00', '11:00', '12:00', '13:00', '14:00', '15:00', '16:00', '17:00'];
         
         hours.forEach(hr => {
-          // 시간 라벨
           const lbl = document.createElement('div');
           lbl.className = 'tt-time-label';
           lbl.textContent = hr;
           ttGrid.appendChild(lbl);
 
-          // 월~금 컬럼
           for (let dayIdx = 1; dayIdx <= 5; dayIdx++) {
             const cell = document.createElement('div');
             cell.style.cssText = 'min-height:48px;padding:2px;position:relative;border-top:1px dashed rgba(255,255,255,0.05);';
 
-            // 목요일 전일 올공강 카드
             if (dayIdx === 4 && hr === '11:00') {
               cell.innerHTML = '<div class="tt-empty-gap">🚀 달콤한 전일 올공강 (All 공강!)</div>';
             } else {
@@ -529,21 +637,38 @@
                   </div>
                 `;
               } else if (!course && dayIdx === 3 && hr === '11:00') {
-                // 수요일 공강 박스 시각화
                 cell.innerHTML = '<div class="tt-empty-gap">☕ 달콤한 공강 (1.5시간)</div>';
               }
             }
-
             ttGrid.appendChild(cell);
           }
         });
       }
 
-      // ─── 3. 자연어 채팅 입력 처리 ───
+      // ─── 3. 자연어 입력 & 퀵 예시 버튼 3종 ───
       const inputChat = document.getElementById('input-nlp-chat');
       const btnAddChat = document.getElementById('btn-add-nlp-chat');
       const nlpPreviewCard = document.getElementById('nlp-preview-card');
       const nlpPreviewText = document.getElementById('nlp-preview-text');
+
+      const btnQuick1 = document.getElementById('btn-quick-1');
+      const btnQuick2 = document.getElementById('btn-quick-2');
+      const btnQuick3 = document.getElementById('btn-quick-3');
+
+      btnQuick1.addEventListener('click', () => {
+        inputChat.value = "얘들아 11월 3일 화요일 오후 2시 공학관 3호관에서 소전 최종평가 진행한대. 노트북 충전기랑 시연 PPT 필수 지참!";
+        inputChat.dispatchEvent(new Event('input'));
+      });
+
+      btnQuick2.addEventListener('click', () => {
+        inputChat.value = "11월 19일 목요일 오후 3시 사범관 대강당 심폐소생술 교육 결석하면 교원자격증 발급 안 됨 편한 바지 입고 올 것";
+        inputChat.dispatchEvent(new Event('input'));
+      });
+
+      btnQuick3.addEventListener('click', () => {
+        inputChat.value = "2027학년도 학생회 회장 부회장 총무 입후보 등록 11월 16일부터 11월 30일 오후 6시까지 과사로 서류 제출";
+        inputChat.dispatchEvent(new Event('input'));
+      });
 
       inputChat.addEventListener('input', () => {
         const val = inputChat.value.trim();
@@ -566,18 +691,22 @@
           title: parsed.title,
           category: parsed.category,
           location: parsed.location,
-          type: 'green',
+          type: parsed.category.includes('시험') ? 'red' : parsed.category.includes('의무') ? 'green' : 'purple',
           dday: 'NEW',
+          memo: val,
         });
 
         showToast('🎉 스케줄이 월별 캘린더 & 주간 시간표에 등록되었습니다!', 'success');
         inputChat.value = '';
         nlpPreviewCard.style.display = 'none';
+
+        // 11월 뷰로 자동 전환
+        currentMonthIdx = 10;
         renderCalendar();
         renderTimetable();
       });
 
-      // 초기 렌더링
+      // 초기 실행
       renderCalendar();
       renderTimetable();
     });

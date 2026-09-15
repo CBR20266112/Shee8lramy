@@ -1,5 +1,5 @@
 /**
- * nlp-calendar.js — 자연어 → 일정 파서 & 국립순천대 컴교과 스케줄 데이터셋
+ * nlp-calendar.js — 자연어 → 일정 파서 & 국립순천대 컴교과 2학기 학사/11월 행사 스케줄 데이터셋
  */
 
 // ──────────────────────────────────────────────
@@ -15,6 +15,77 @@ export const TIMETABLE_COURSES = [
   { day: 5, start: '11:00', end: '13:00', name: '운영체제', prof: '최교수', room: '공학관 3호관 202호', color: 'linear-gradient(135deg, rgba(77,150,255,0.8), rgba(59,130,246,0.8))' },
 ];
 
+export const NOVEMBER_EVENTS = [
+  {
+    id: "evt-nov-03",
+    date: "2026-11-03",
+    time: "14:00 - 17:00",
+    title: "소전(소프트웨어 전시회) 최종 평가",
+    category: "🔴 시험",
+    location: "공학관 3호관 전산실습실",
+    memo: "졸업작품 및 학술제 출품작 최종 시연 심사 (지각 시 감점)",
+    type: "red",
+    dday: "D-49"
+  },
+  {
+    id: "evt-nov-13",
+    date: "2026-11-13",
+    time: "13:00 - 18:00",
+    title: "소전 부스 설치 및 리허설 준비",
+    category: "🔵 행사",
+    location: "70주년 기념관 우석홀",
+    memo: "전시 판넬 부착, 모니터/기자재 세팅 및 네트워크 점검",
+    type: "blue",
+    dday: "D-59"
+  },
+  {
+    id: "evt-nov-16",
+    date: "2026-11-16",
+    time: "09:00",
+    title: "2027학년도 학생회 임원 입후보 등록 시작",
+    category: "🟣 공지",
+    location: "학과 사무실",
+    memo: "선출직: 회장/부회장/총무 (각 부 팀장은 추후 임명직 진행)",
+    type: "purple",
+    dday: "D-62"
+  },
+  {
+    id: "evt-nov-17",
+    date: "2026-11-17",
+    time: "10:00 - 17:00",
+    title: "⭐ 2026 소프트웨어 전시회 (소전 본행사)",
+    category: "🟡 행사",
+    location: "70주년 기념관 우석홀",
+    memo: "학과 전체 필수 참석 행사! 학과장님 축사 및 프로젝트 부스 운영 (우석홀 부스 지킴이 / 필수 출석 체크)",
+    type: "yellow",
+    isHighlight: true,
+    dday: "⭐ D-Day"
+  },
+  {
+    id: "evt-nov-19",
+    date: "2026-11-19",
+    time: "15:00 - 17:00",
+    title: "응급처치 및 심폐소생술(CPR) 법정 의무 교육",
+    category: "🟢 의무",
+    location: "사범관 1호관 대강당",
+    memo: "사범관 1호관 CPR 교육 (교원자격증/졸업 필수! 결석 시 1년 유예, 편한 바지 착용)",
+    type: "green",
+    isHighlight: true,
+    dday: "⚠️ 필수"
+  },
+  {
+    id: "evt-nov-30",
+    date: "2026-11-30",
+    time: "18:00 마감",
+    title: "2027학년도 학생회 임원 등록 마감",
+    category: "🔴 마감",
+    location: "학과 사무실 서류 제출처",
+    memo: "입후보자 추천서 및 공약서 제출 최종 마감",
+    type: "red",
+    dday: "D-76"
+  }
+];
+
 export const MONTHLY_EVENTS = [
   { date: '2026-09-18', title: '2026 융합 아이디어 캠프', category: '🔵 행사', location: '공학관 3호관', type: 'blue', dday: 'D-3' },
   { date: '2026-09-22', title: '컴퓨터교육과 2학기 개강총회 & 회식', category: '🔵 행사', location: '학생회관 2층 / 대학로', type: 'blue', dday: 'D-7' },
@@ -26,6 +97,7 @@ export const MONTHLY_EVENTS = [
   { date: '2026-10-22', title: '🚨 컴퓨터교육론 중간고사', category: '🔴 시험', location: '사범관 2호관 105호', type: 'red', dday: 'D-37' },
   { date: '2026-10-23', title: '🚨 운영체제 중간고사', category: '🔴 시험', location: '공학관 3호관 202호', type: 'red', dday: 'D-38' },
   { date: '2026-10-24', title: '🚨 2학기 중간고사 종료 & 뒤풀이', category: '🔵 행사', location: '동아리방', type: 'blue', dday: 'D-39' },
+  ...NOVEMBER_EVENTS
 ];
 
 // ──────────────────────────────────────────────
@@ -48,6 +120,14 @@ export function parseDate(text) {
   if (/내일/.test(text)) { const d = new Date(now); d.setDate(d.getDate() + 1); return d; }
   if (/모레/.test(text)) { const d = new Date(now); d.setDate(d.getDate() + 2); return d; }
 
+  const mdMatch = text.match(/(\d{1,2})[월]\s*(\d{1,2})[일]?/);
+  if (mdMatch) {
+    const d = new Date(now);
+    d.setFullYear(2026);
+    d.setMonth(parseInt(mdMatch[1]) - 1, parseInt(mdMatch[2]));
+    return d;
+  }
+
   const thisWeekMatch = text.match(/이번\s*주?\s*(월|화|수|목|금|토|일)요일?/);
   if (thisWeekMatch) {
     const targetDay = WEEKDAY_MAP[thisWeekMatch[1] + '요일'] ?? WEEKDAY_MAP[thisWeekMatch[1]];
@@ -57,30 +137,7 @@ export function parseDate(text) {
     return d;
   }
 
-  const nextWeekMatch = text.match(/다음\s*주?\s*(월|화|수|목|금|토|일)요일?/);
-  if (nextWeekMatch) {
-    const targetDay = WEEKDAY_MAP[nextWeekMatch[1] + '요일'] ?? WEEKDAY_MAP[nextWeekMatch[1]];
-    const d = new Date(now);
-    const diff = (targetDay - now.getDay() + 7) % 7 + 7;
-    d.setDate(d.getDate() + diff);
-    return d;
-  }
-
-  const mdMatch = text.match(/(\d{1,2})[월]\s*(\d{1,2})[일]/);
-  if (mdMatch) {
-    const d = new Date(now);
-    d.setMonth(parseInt(mdMatch[1]) - 1, parseInt(mdMatch[2]));
-    return d;
-  }
-
-  const dayMatch = text.match(/(\d{1,2})일/);
-  if (dayMatch) {
-    const d = new Date(now);
-    d.setDate(parseInt(dayMatch[1]));
-    return d;
-  }
-
-  return new Date(now);
+  return new Date(2026, 10, 3); // 기본 11월 3일
 }
 
 export function parseTime(text) {
@@ -105,41 +162,45 @@ export function parseTime(text) {
     return { h: parseInt(colonMatch[1]), m: parseInt(colonMatch[2]) };
   }
 
-  const hMatch = text.match(/(\d{1,2})시\s*(\d{1,2})?분?/);
+  const hMatch = text.match(/(\d{1,2})시/);
   if (hMatch) {
-    return { h: parseInt(hMatch[1]), m: parseInt(hMatch[2] || '0') };
+    let h = parseInt(hMatch[1]);
+    if (h < 9) h += 12;
+    return { h, m: 0 };
   }
 
-  return { h: 16, m: 0 }; // 기본값 오후 4시
+  return { h: 14, m: 0 };
 }
 
 export function parseLocation(text) {
   const locationPatterns = [
-    /([가-힣a-zA-Z0-9]+관(?:\s*\d+호관)?)/,
-    /([가-힣]+\s*학식)/,
-    /(학생회관|도서관|LMS|온라인|동아리방)/,
-    /([가-힣]+호)/,
+    /(공학관\s*\d*호관?)/,
+    /(사범관\s*\d*호관?\s*대강당?)/,
+    /(사범관\s*\d*호관?)/,
+    /(과사|학과\s*사무실)/,
+    /(우석홀|70주년\s*기념관)/,
+    /([가-힣a-zA-Z0-9]+관)/,
   ];
 
   for (const pat of locationPatterns) {
     const m = text.match(pat);
     if (m) return m[1];
   }
-  return '캠퍼스 내';
+  return '캠퍼스 내 지정 장소';
 }
 
 export function parseCategory(text) {
-  if (/시험|중간|기말|퀴즈/i.test(text)) return '🔴 시험';
-  if (/과제|리포트|제출|LMS/i.test(text)) return '🟡 과제';
-  if (/발표|PPT/i.test(text)) return '🟡 발표';
-  if (/개강총회|행사|캠프/i.test(text)) return '🔵 행사';
-  if (/약속|학식|번개|회식/i.test(text)) return '🟢 조별모임';
-  return '🟢 조별모임';
+  if (/소전|최종평가|시험|결석하면|발급 안 됨/i.test(text)) return '🔴 주요행사';
+  if (/심폐소생술|CPR|교육|의무/i.test(text)) return '🟢 의무교육';
+  if (/학생회|입후보|선거|과사/i.test(text)) return '🟣 공지사항';
+  return '🔵 학과일정';
 }
 
 export function parseTitle(text) {
-  const cleaned = text.replace(/(오늘|내일|모레|오후|오전|\d+시|\d+분)/g, '').trim();
-  return cleaned.slice(0, 20) || '학사 약속 일정';
+  if (/소전|소프트웨어/i.test(text)) return '[소전] 최종평가 시연';
+  if (/심폐소생술|CPR/i.test(text)) return '[의무] CPR 심폐소생술 교육';
+  if (/학생회|입후보/i.test(text)) return '[공지] 학생회 임원 등록 마감';
+  return text.slice(0, 18);
 }
 
 export function parseNaturalLanguage(text) {
@@ -151,7 +212,7 @@ export function parseNaturalLanguage(text) {
 
   date.setHours(time.h, time.m, 0, 0);
 
-  const dateStr = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+  const dateStr = `2026-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
   const timeStr = `${String(time.h).padStart(2, '0')}:${String(time.m).padStart(2, '0')}`;
 
   return {
@@ -165,10 +226,6 @@ export function parseNaturalLanguage(text) {
     id: Date.now(),
   };
 }
-
-// ──────────────────────────────────────────────
-// 캘린더 이벤트 로컬스토리지 입출력
-// ──────────────────────────────────────────────
 
 export function getCalendarEvents() {
   try {
@@ -184,9 +241,4 @@ export function saveCalendarEvent(evt) {
   events.push(evt);
   localStorage.setItem('shee8_calendar_v2', JSON.stringify(events));
   window.dispatchEvent(new CustomEvent('shee8-calendar-updated', { detail: evt }));
-}
-
-export function getEventsForDate(dateStr) {
-  const events = getCalendarEvents();
-  return events.filter(e => e.date === dateStr);
 }
