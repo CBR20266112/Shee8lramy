@@ -256,6 +256,18 @@
           "일어나... 지금 안 일어나면 재수강 확정이야..."
         </div>
 
+        <!-- 미니 대화형 자연어 일정 비서 바 -->
+        <div class="mascot-nlp-bar" style="margin: 12px 0 16px; width: 100%; display: flex; gap: 8px; align-items: center;">
+          <input type="text" id="mascot-nlp-input" class="mascot-nlp-input" 
+                 placeholder="💬 &quot;내일 2시 컴교론 발표&quot; 처럼 쉽라미한테 일정을 던져보세요..." 
+                 aria-label="쉽라미 자연어 일정 입력"
+                 style="flex: 1; padding: 10px 16px; font-size: 0.82rem; border-radius: 20px; border: 1px solid var(--border-glass, rgba(255,255,255,0.2)); background: rgba(0, 0, 0, 0.25); backdrop-filter: blur(10px); color: var(--text-primary, #fff); outline: none; transition: all 0.2s ease;">
+          <button type="button" id="btn-mascot-nlp-send" class="btn-mascot-nlp-send" title="일정 등록" aria-label="일정 등록"
+                  style="width: 40px; height: 40px; border-radius: 50%; border: none; background: linear-gradient(135deg, var(--color-purple-primary, #a78bfa), var(--color-pink-soft, #f472b6)); color: #fff; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 12px rgba(167,139,250,0.4); flex-shrink: 0; transition: transform 0.2s ease;">
+            ⚡
+          </button>
+        </div>
+
         <!-- XP 진행 바 -->
         <div class="xp-section">
           <div class="xp-label">
@@ -616,6 +628,7 @@
     window.playAsmr = playAsmr;
     import { checkAndShowOpening, startImageSlideshow } from './js/opening.js';
     import { pickMorningAction, MORNING_ACTION, initWakeAlarmScheduler, saveMorningCallSchedule, getSleepTimeDefaults, formatAlarmHint, markMorningCallCompleted } from './js/morningcall.js';
+    import { getScheduleAwareQuote, handleMascotNLPInput } from './js/mascot-ai.js';
     import { recordAttendance, getAttendanceRewardMessages, getAttendance, isCheckedInToday, getWeekCycleProgress, getNextCycleReward, getTodayCycleRewardPreview, getStoryImages } from './js/attendance.js';
 
     document.addEventListener('DOMContentLoaded', () => {
@@ -743,8 +756,23 @@
 
       function updateSheepSpeechBubble() {
         if (!speechBubble) return;
-        const quote = QUOTES_POOL[Math.floor(Math.random() * QUOTES_POOL.length)];
+        const scheduleData = getScheduleAwareQuote();
+        let quote = scheduleData.quote;
+        if (!quote) {
+          quote = QUOTES_POOL[Math.floor(Math.random() * QUOTES_POOL.length)];
+        } else if (scheduleData.pose) {
+          updateSheepPoseByString(scheduleData.pose);
+        }
         speechBubble.textContent = `"${quote}"`;
+      }
+
+      function updateSheepPoseByString(poseStr) {
+        let pNum = 1;
+        if (poseStr === SHEEP_POSE.WORKSHOP) pNum = 4;
+        else if (poseStr === SHEEP_POSE.MINIGAME) pNum = 3;
+        else if (poseStr === SHEEP_POSE.GALLERY) pNum = 5;
+        else if (poseStr === SHEEP_POSE.SLEEP) pNum = 2;
+        updateSheepPose(pNum);
       }
 
       function updateSheepPose(poseNum = 1) {
@@ -1166,7 +1194,15 @@
           return;
         }
 
-        const quote = getRandomQuote(getSettings().language || 'en');
+        // 학사 일정 실시간 감시 팩폭 엔진 연동
+        const scheduleData = getScheduleAwareQuote();
+        let quote = scheduleData.quote;
+        if (!quote) {
+          quote = getRandomQuote(getSettings().language || 'en');
+        } else if (scheduleData.pose && scheduleData.pose !== SHEEP_POSE.IDLE) {
+          updateSheepPoseByString(scheduleData.pose);
+        }
+
         speechBubble.textContent = `"${quote}"`;
         speechBubble.style.animation = 'none';
         speechBubble.offsetHeight;
@@ -1809,11 +1845,51 @@
         });
       });
 
+      // ─── 자연어 일정 비서 이벤트 바인딩 ───
+      const nlpInput = document.getElementById('mascot-nlp-input');
+      const nlpSendBtn = document.getElementById('btn-mascot-nlp-send');
+
+      function sendMascotNLP() {
+        if (!nlpInput) return;
+        const val = nlpInput.value;
+        const res = handleMascotNLPInput(val);
+        
+        if (speechBubble) {
+          speechBubble.textContent = `"${res.quote}"`;
+          speechBubble.style.animation = 'none';
+          speechBubble.offsetHeight;
+          speechBubble.style.animation = 'fadeInUp 0.4s ease';
+        }
+
+        updateSheepPoseByString(res.pose);
+        const mainImg = document.getElementById('sheeplramy-main-img');
+        if (mainImg) {
+          mainImg.style.transform = 'scale(1.15) rotate(-4deg)';
+          setTimeout(() => mainImg.style.transform = 'scale(1) rotate(0deg)', 400);
+        }
+
+        if (res.success) {
+          showToast(`📅 '${res.event.title}' 학사 일정 등록 완료!`, 'success');
+          nlpInput.value = '';
+          window.dispatchEvent(new CustomEvent('academicEventsUpdated'));
+        }
+
+        setTimeout(() => updateSheepPose(1), 3000);
+      }
+
+      nlpSendBtn?.addEventListener('click', sendMascotNLP);
+      nlpInput?.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault();
+          sendMascotNLP();
+        }
+      });
+
       // ─── 초기 실행 ───
       initHomeAsmrSection();
       refreshUI();
       showAttendancePromptOnFirstVisit();
-      speechBubble.textContent = `"${getRandomQuote(getSettings().language || 'en')}"`;
+      updateSheepSpeechBubble();
       setTimeout(startAutoTimers, 1500);
 
       // 화면 어느 곳이든 최초 터치/클릭 시 오디오를 활성화하고 BGM을 자동 재생
