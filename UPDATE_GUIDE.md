@@ -7,7 +7,7 @@
 - Git 저장소가 연결되어 있는지 확인합니다.
 
 ```powershell
-cd C:\Users\vipgo\Dev\Shee8lramy
+cd ./
 git status
 ```
 

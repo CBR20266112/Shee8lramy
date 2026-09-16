@@ -13,9 +13,9 @@ Shee8lramy — ASMR "Tingle" Feature Report & Technical Analysis
 
 파일 생성 위치 및 이름
 --------------------
-- Markdown: C:\Users\vipgo\Dev\Shee8lramy\asmr-tingle-final-report.md
-- Markdown (docs): C:\Users\vipgo\Dev\Shee8lramy\docs\asmr-tingle-final-report.md
-- PDF: C:\Users\vipgo\Dev\Shee8lramy\asmr-tingle-final-report.pdf
+- Markdown: ./asmr-tingle-final-report.md
+- Markdown (docs): ./docs/asmr-tingle-final-report.md
+- PDF: ./asmr-tingle-final-report.pdf
 
 참고: VERSION 파일을 1.96.0 -> 1.96.1로 패치했습니다.
 

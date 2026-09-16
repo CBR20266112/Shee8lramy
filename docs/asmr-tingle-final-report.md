@@ -67,11 +67,11 @@ Shee8lramy — ASMR "Tingle" Feature Report & Technical Analysis
 운영·테스트 절차 (재현 가이드)
 -----------------------------
 환경 준비
-  - Node/Python 등 간단한 정적 서버로 페이지를 제공해야 합니다. 레포지토리 루트에서 정적 서버 실행 권장 위치는 C:\Users\vipgo\Dev\Shee8lramy
+  - Node/Python 등 간단한 정적 서버로 페이지를 제공해야 합니다. 레포지토리 루트에서 정적 서버 실행 권장 위치는 레포지토리 루트(./)입니다.
 
 서버 시작(예)
   - Python 3: (PowerShell)
-    cd C:\Users\vipgo\Dev\Shee8lramy
+    cd ./
     python -m http.server 5500
 
 접속 URL
@@ -160,7 +160,7 @@ Shee8lramy — ASMR "Tingle" Feature Report & Technical Analysis
 부록: 빠른 재현 스크립트/명령
 ---------------------------
 1) 서버 띄우기 (PowerShell)
-   cd C:\Users\vipgo\Dev\Shee8lramy
+   cd ./
    python -m http.server 5500
 
 2) 브라우저에서 열기
