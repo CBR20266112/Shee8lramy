@@ -5,6 +5,8 @@ Shee8lramy — ASMR "Tingle" Feature Report & Technical Analysis
 
 버전: 1.96.1
 
+> **중복 보관 사본.** 작성 당시의 기능 보고서이며 현재 런타임 검증을 뜻하지 않는다. 선호 사본은 `docs/asmr-tingle-final-report.md`다.
+
 요약
 ----
 이 문서는 Shee8lramy(Shee8lramy) 웹앱에 새로 추가된 ASMR 프리셋 "팅글(tingle)" 기능의 구현 내역, 설계·기술적 분석, 테스트 절차, 잠재적 리스크 및 권장 후속 조치 등을 상세히 정리한 최종 보고서입니다. 새로 추가된 항목은 프로그램적(합성) 방식으로 Web Audio API를 사용해 생성되며 외부 오디오 샘플을 사용하지 않습니다.

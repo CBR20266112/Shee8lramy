@@ -6,6 +6,8 @@
 확인 버전: Shee8lramy v1.92.0  
 추가 로컬 수정 버전: Shee8lramy v1.92.1
 
+> **과거 배포 검수 스냅샷.** 아래 결과는 위 날짜와 버전에 한정된다. 현재 Pages 설정, URL 동작, 또는 최신 코드의 런타임 상태를 확인한 기록이 아니다.
+
 ## 1. 프로젝트 설명
 
 Sleepy Sheep은 HTML, CSS, JavaScript ES Modules, Canvas API, localStorage를 중심으로 만든 수면 기록형 힐링 웹앱이다. 사용자는 양 캐릭터 쉽라미를 돌보면서 수면 기록, 꿈일기, 고민 상담, ASMR, 출석 보상, 양털 수확, 공방 꾸미기 기능을 사용할 수 있다.
